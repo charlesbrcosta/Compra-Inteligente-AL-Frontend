@@ -11,6 +11,8 @@ import { HomeScreen } from '@/features/recommendations/presentation/HomeScreen';
 import { ProductsScreen } from '@/features/products/presentation/ProductsScreen';
 import { ProfileScreen } from '@/features/user/presentation/ProfileScreen';
 import { RecommendationsScreen } from '@/features/recommendations/presentation/RecommendationsScreen';
+import { RecommendationHistoryScreen } from '@/features/recommendations/presentation/RecommendationHistoryScreen';
+import { RouteImpactsScreen } from '@/features/recommendations/presentation/RouteImpactsScreen';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -39,6 +41,8 @@ function AppNavigator() {
       <AppTabs.Screen component={HomeScreen} name="Home" options={{ title: 'Inicio' }} />
       <AppTabs.Screen component={ProductsScreen} name="Products" options={{ title: 'Produtos' }} />
       <AppTabs.Screen component={RecommendationsScreen} name="Recommendations" options={{ title: 'Recomendacao' }} />
+      <AppTabs.Screen component={RouteImpactsScreen} name="RouteImpacts" options={{ title: 'Impactos' }} />
+      <AppTabs.Screen component={RecommendationHistoryScreen} name="History" options={{ title: 'Historico' }} />
       <AppTabs.Screen component={ProfileScreen} name="Profile" options={{ title: 'Perfil' }} />
     </AppTabs.Navigator>
   );

@@ -3,6 +3,7 @@ export type MarketType = 'supermercado' | 'atacadista';
 export type UnitType = 'un' | 'kg' | 'g' | 'l' | 'ml' | 'pct' | 'cx';
 export type RouteConditionType = 'accident' | 'rain' | 'road_block' | 'traffic' | 'road_work';
 export type RouteConditionSeverity = 'low' | 'medium' | 'high';
+export type DistanceSource = 'openrouteservice' | 'local_estimate';
 
 export interface User {
   id: string;
@@ -55,6 +56,7 @@ export interface Market {
   city: string;
   neighborhood: string;
   distanceKm: number;
+  distanceSource?: DistanceSource;
   location: GeoLocation;
   routeConditions?: RouteCondition[];
   products: MarketProductPrice[];
@@ -72,4 +74,11 @@ export interface Recommendation {
   estimatedSavings: number;
   missingProducts: ShoppingProduct[];
   isBest: boolean;
+}
+
+export interface RecommendationHistory {
+  id: string;
+  userId: string;
+  createdAt: string;
+  recommendations: Recommendation[];
 }

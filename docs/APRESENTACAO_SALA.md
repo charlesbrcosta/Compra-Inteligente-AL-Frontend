@@ -26,6 +26,9 @@ O app funciona 100% com dados mockados, sem API real da SEFAZ, Google Maps ou ba
 - Lista de produtos com adicionar, editar e remover.
 - Mercados mockados de Alagoas com precos, coordenadas e distancia calculada a partir da posicao atual simulada.
 - Calculo de recomendacao do mercado mais vantajoso considerando produtos, combustivel e impactos no percurso.
+- Filtro da recomendacao por cidade e bairro.
+- Historico das recomendacoes calculadas.
+- Tela de impactos do percurso para explicar chuva, acidente, bloqueio, transito e obra.
 - Tela web/mobile com componentes reaproveitaveis.
 
 ## 3. Tecnologias usadas

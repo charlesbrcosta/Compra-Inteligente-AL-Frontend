@@ -7,6 +7,8 @@ export type AppTabParamList = {
   Home: undefined;
   Products: undefined;
   Recommendations: undefined;
+  RouteImpacts: undefined;
+  History: undefined;
   Profile: undefined;
 };
 

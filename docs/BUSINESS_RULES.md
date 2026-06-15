@@ -41,6 +41,16 @@ totalFinal = totalProdutos + custoDeslocamentoAjustado
 
 O melhor mercado é aquele com o menor `totalFinal`.
 
+## Origem da distancia
+
+Quando o backend consegue consultar o OpenRouteService, a recomendacao marca a distancia como `openrouteservice`.
+
+Quando a API externa nao esta disponivel, a recomendacao usa `local_estimate`, que calcula a distancia por coordenadas mockadas com fator de rota.
+
+## Historico
+
+Sempre que uma recomendacao e calculada, o backend salva um snapshot do resultado no SQLite. Esse historico permite comparar recomendacoes anteriores mesmo antes da integracao com SEFAZ.
+
 ## Economia estimada
 
 Para cada mercado que não é o melhor, a diferença exibida é:
