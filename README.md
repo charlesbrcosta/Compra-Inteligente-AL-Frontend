@@ -52,6 +52,10 @@ A recomendação considera:
 - Lista manual de produtos com adicionar, editar e remover enquanto a integracao com SEFAZ nao existe.
 - Mercados mockados de Alagoas com preços, coordenadas e produtos disponíveis.
 - Cálculo de recomendação considerando km rodado do veículo.
+- Filtro de recomendações por todos os mercados, cidade ou bairro.
+- Tela de impactos do percurso com chuva, acidente, bloqueio, trânsito e obra.
+- Histórico das recomendações calculadas.
+- Indicação se a distância veio do OpenRouteService ou de estimativa local.
 - Destaque visual para o mercado mais vantajoso.
 - Interface responsiva para mobile e web.
 - Documentação técnica para evolução futura.
@@ -109,11 +113,13 @@ O frontend consome o backend em:
 http://localhost:3333/api
 ```
 
-Essa configuração fica em:
+Essa configuração pode ser definida por variável de ambiente:
 
 ```txt
-src/shared/api/apiConfig.ts
+EXPO_PUBLIC_API_BASE_URL=http://localhost:3333/api
 ```
+
+Use `.env.example` como referência para criar um `.env` local. Se a variável não existir, o app usa `http://localhost:3333/api`.
 
 Antes de usar login, produtos, veículo, mercados ou recomendações, suba o backend:
 
