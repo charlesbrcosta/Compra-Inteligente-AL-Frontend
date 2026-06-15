@@ -1,4 +1,4 @@
-import { GeoLocation, Market, ShoppingProduct, User, Vehicle } from '@/shared/types/entities';
+import { GeoLocation, Market, RouteCondition, ShoppingProduct, User, Vehicle } from '@/shared/types/entities';
 
 export const mockUser: User = {
   id: 'user-demo',
@@ -29,6 +29,69 @@ export const mockProducts: ShoppingProduct[] = [
   { id: 'prod-4', name: 'Cafe tradicional', quantity: 1, unit: 'pct' },
 ];
 
+export const mockRouteConditionsByMarketId: Record<string, RouteCondition[]> = {
+  'market-1': [
+    {
+      type: 'rain',
+      label: 'Chuva leve',
+      severity: 'low',
+      impactPercent: 0.05,
+      description: 'Pista molhada pode reduzir a velocidade media e aumentar levemente o consumo.',
+    },
+  ],
+  'market-2': [
+    {
+      type: 'traffic',
+      label: 'Transito intenso',
+      severity: 'medium',
+      impactPercent: 0.16,
+      description: 'Fluxo lento na Avenida Menino Marcelo aumenta tempo parado e consumo.',
+    },
+    {
+      type: 'road_work',
+      label: 'Obra na via',
+      severity: 'medium',
+      impactPercent: 0.12,
+      description: 'Trecho com desvio e reducao de faixa durante o percurso.',
+    },
+  ],
+  'market-3': [
+    {
+      type: 'accident',
+      label: 'Acidente na pista',
+      severity: 'high',
+      impactPercent: 0.25,
+      description: 'Ocorrencia no corredor de acesso ao Tabuleiro aumenta o custo estimado.',
+    },
+    {
+      type: 'rain',
+      label: 'Chuva moderada',
+      severity: 'medium',
+      impactPercent: 0.1,
+      description: 'Chuva reduz velocidade media e aumenta consumo em vias urbanas.',
+    },
+  ],
+  'market-4': [
+    {
+      type: 'road_block',
+      label: 'Bloqueio parcial',
+      severity: 'high',
+      impactPercent: 0.3,
+      description: 'Bloqueio parcial na Fernandes Lima exige desvio no trajeto.',
+    },
+  ],
+  'market-5': [],
+  'market-6': [
+    {
+      type: 'rain',
+      label: 'Chuva forte na rodovia',
+      severity: 'high',
+      impactPercent: 0.2,
+      description: 'Trecho longo com chuva aumenta consumo e reduz velocidade media.',
+    },
+  ],
+};
+
 export const mockMarkets: Market[] = [
   {
     id: 'market-1',
@@ -43,6 +106,7 @@ export const mockMarkets: Market[] = [
       longitude: -35.7042,
       label: 'Palato Ponta Verde',
     },
+    routeConditions: mockRouteConditionsByMarketId['market-1'],
     products: [
       { productName: 'Arroz parboilizado', unit: 'kg', price: 6.49 },
       { productName: 'Feijao carioca', unit: 'kg', price: 8.79 },
@@ -65,6 +129,7 @@ export const mockMarkets: Market[] = [
       longitude: -35.7771,
       label: 'Assai Atacadista Maceio',
     },
+    routeConditions: mockRouteConditionsByMarketId['market-2'],
     products: [
       { productName: 'Arroz parboilizado', unit: 'kg', price: 5.49 },
       { productName: 'Feijao carioca', unit: 'kg', price: 7.69 },
@@ -87,6 +152,7 @@ export const mockMarkets: Market[] = [
       longitude: -35.7677,
       label: 'Atacadao Tabuleiro',
     },
+    routeConditions: mockRouteConditionsByMarketId['market-3'],
     products: [
       { productName: 'Arroz parboilizado', unit: 'kg', price: 5.29 },
       { productName: 'Feijao carioca', unit: 'kg', price: 7.49 },
@@ -109,6 +175,7 @@ export const mockMarkets: Market[] = [
       longitude: -35.7355,
       label: 'GBarbosa Farol',
     },
+    routeConditions: mockRouteConditionsByMarketId['market-4'],
     products: [
       { productName: 'Arroz parboilizado', unit: 'kg', price: 6.19 },
       { productName: 'Feijao carioca', unit: 'kg', price: 8.19 },
@@ -131,6 +198,7 @@ export const mockMarkets: Market[] = [
       longitude: -35.7001,
       label: 'Unicompra Jatiuca',
     },
+    routeConditions: mockRouteConditionsByMarketId['market-5'],
     products: [
       { productName: 'Arroz parboilizado', unit: 'kg', price: 6.29 },
       { productName: 'Feijao carioca', unit: 'kg', price: 8.49 },
@@ -153,6 +221,7 @@ export const mockMarkets: Market[] = [
       longitude: -36.6616,
       label: 'Mix Mateus Arapiraca',
     },
+    routeConditions: mockRouteConditionsByMarketId['market-6'],
     products: [
       { productName: 'Arroz parboilizado', unit: 'kg', price: 5.19 },
       { productName: 'Feijao carioca', unit: 'kg', price: 7.29 },

@@ -8,13 +8,33 @@ Depois de calcular a distância de ida, o deslocamento considera ida e volta:
 
 ```ts
 kmRodadoTotal = distanciaIdaKm * 2
-custoDeslocamento = (kmRodadoTotal / consumoKmPorLitro) * precoCombustivel
+custoDeslocamentoBase = (kmRodadoTotal / consumoKmPorLitro) * precoCombustivel
 ```
+
+## Impactos do percurso
+
+O sistema tambem considera variaveis mockadas que podem afetar o trajeto:
+
+- acidente na pista;
+- chuva;
+- bloqueio parcial;
+- transito intenso;
+- obra na via.
+
+Cada condicao possui um percentual de impacto. Esses percentuais aumentam o custo estimado de deslocamento, simulando maior consumo por lentidao, desvios, paradas e reducao de velocidade.
+
+```ts
+percentualImpactoPercurso = somaDosPercentuaisDasCondicoes
+custoImpactoPercurso = custoDeslocamentoBase * percentualImpactoPercurso
+custoDeslocamentoAjustado = custoDeslocamentoBase + custoImpactoPercurso
+```
+
+Para evitar valores irreais, o impacto total e limitado a 60%.
 
 ## Total final
 
 ```ts
-totalFinal = totalProdutos + custoDeslocamento
+totalFinal = totalProdutos + custoDeslocamentoAjustado
 ```
 
 ## Melhor mercado

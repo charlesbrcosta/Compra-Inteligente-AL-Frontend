@@ -12,6 +12,7 @@ O objetivo e ajudar o usuario a decidir em qual supermercado ou atacadista vale 
 - quilometros rodados do veiculo a partir da posicao atual do usuario;
 - consumo medio do veiculo;
 - preco do combustivel;
+- variaveis do percurso, como acidente, chuva, bloqueio, transito e obra;
 - custo de ida e volta.
 
 O app funciona 100% com dados mockados, sem API real da SEFAZ, Google Maps ou backend. A posicao atual e as coordenadas dos mercados sao simuladas para representar o que futuramente poderia vir do GPS e do Google Maps.
@@ -24,7 +25,7 @@ O app funciona 100% com dados mockados, sem API real da SEFAZ, Google Maps ou ba
 - Cadastro de veiculo com modelo, combustivel, consumo e preco por litro.
 - Lista de produtos com adicionar, editar e remover.
 - Mercados mockados de Alagoas com precos, coordenadas e distancia calculada a partir da posicao atual simulada.
-- Calculo de recomendacao do mercado mais vantajoso.
+- Calculo de recomendacao do mercado mais vantajoso considerando produtos, combustivel e impactos no percurso.
 - Tela web/mobile com componentes reaproveitaveis.
 
 ## 3. Tecnologias usadas
@@ -177,8 +178,11 @@ Formula usada:
 ```txt
 distanciaIdaKm = distancia entre posicaoAtual e mercado
 kmRodadoTotal = distanciaIdaKm * 2
-custoDeslocamento = (kmRodadoTotal / consumoKmPorLitro) * precoCombustivel
-totalFinal = totalProdutos + custoDeslocamento
+custoDeslocamentoBase = (kmRodadoTotal / consumoKmPorLitro) * precoCombustivel
+percentualImpactoPercurso = soma dos impactos de acidente, chuva, bloqueio, transito e obra
+custoImpactoPercurso = custoDeslocamentoBase * percentualImpactoPercurso
+custoDeslocamentoAjustado = custoDeslocamentoBase + custoImpactoPercurso
+totalFinal = totalProdutos + custoDeslocamentoAjustado
 ```
 
 Codigo:
@@ -205,7 +209,9 @@ calculateDisplacementCost(
 4. A distancia e multiplicada por 2 porque considera ida e volta.
 5. O resultado e dividido pelo consumo do veiculo em km/l.
 6. Depois multiplica pelo preco do combustivel.
-7. Assim temos o custo estimado de deslocamento.
+7. O sistema soma os percentuais de impacto do percurso, como chuva ou acidente.
+8. Esse percentual gera um acrescimo sobre o custo base do combustivel.
+9. Assim temos o custo estimado de deslocamento ajustado.
 
 Exemplo:
 
@@ -217,6 +223,13 @@ preco gasolina = R$ 6,00
 
 custo = (20 / 10) * 6
 custo = R$ 12,00
+
+impacto do percurso = 25%
+custo impacto = 12 * 0,25
+custo impacto = R$ 3,00
+
+custo ajustado = 12 + 3
+custo ajustado = R$ 15,00
 ```
 
 ## 7. Como a melhor recomendacao e escolhida

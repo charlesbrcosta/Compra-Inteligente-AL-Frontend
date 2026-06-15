@@ -4,6 +4,8 @@ import { Recommendation } from '@/shared/types/entities';
 import { formatCurrency, formatDistance } from '@/shared/utils/formatters';
 
 export function RecommendationCard({ recommendation }: { recommendation: Recommendation }) {
+  const routeConditions = recommendation.routeConditions ?? [];
+
   return (
     <View
       className={`rounded-lg border p-4 ${
@@ -21,11 +23,26 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
       <View className="mt-4 gap-2">
         <Row label="Produtos" value={formatCurrency(recommendation.productsTotal)} />
         <Row label="Distancia" value={formatDistance(recommendation.market.distanceKm)} />
-        <Row label="Combustivel ida e volta" value={formatCurrency(recommendation.displacementCost)} />
+        <Row label="Combustivel base" value={formatCurrency(recommendation.baseDisplacementCost ?? recommendation.displacementCost)} />
+        <Row label="Impacto do percurso" value={`${formatCurrency(recommendation.routeImpactCost ?? 0)} (${Math.round((recommendation.routeImpactPercent ?? 0) * 100)}%)`} />
+        <Row label="Combustivel ajustado" value={formatCurrency(recommendation.displacementCost)} />
         <View className="h-px bg-slate-200" />
         <Row isStrong label="Total final" value={formatCurrency(recommendation.finalTotal)} />
         {!recommendation.isBest ? <Row label="Diferenca para o melhor" value={formatCurrency(recommendation.estimatedSavings)} /> : null}
       </View>
+
+      {routeConditions.length > 0 ? (
+        <View className="mt-3 gap-1 rounded-md bg-slate-100 p-3">
+          <Text className="text-xs font-bold uppercase text-slate-600">Condicoes do percurso</Text>
+          {routeConditions.map((condition) => (
+            <Text key={`${recommendation.market.id}-${condition.type}-${condition.label}`} className="text-xs text-slate-700">
+              {condition.label}: +{Math.round(condition.impactPercent * 100)}%
+            </Text>
+          ))}
+        </View>
+      ) : (
+        <Text className="mt-3 text-xs text-emerald-700">Percurso sem impactos mockados no momento.</Text>
+      )}
 
       {recommendation.missingProducts.length > 0 ? (
         <Text className="mt-3 text-xs text-red-700">
