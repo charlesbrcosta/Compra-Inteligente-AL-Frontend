@@ -11,6 +11,7 @@ O projeto funciona com dados mockados e foi estruturado para evoluir futuramente
 - [Tecnologias](#tecnologias)
 - [Requisitos](#requisitos)
 - [Instalação local](#instalação-local)
+- [Configuração da API](#configuração-da-api)
 - [Como rodar](#como-rodar)
 - [Scripts disponíveis](#scripts-disponíveis)
 - [Dados mockados](#dados-mockados)
@@ -99,6 +100,33 @@ Instale as dependências:
 ```bash
 npm install
 ```
+
+## Configuração da API
+
+O frontend consome o backend em:
+
+```txt
+http://localhost:3333/api
+```
+
+Essa configuração fica em:
+
+```txt
+src/shared/api/apiConfig.ts
+```
+
+Antes de usar login, produtos, veículo, mercados ou recomendações, suba o backend:
+
+```bash
+cd ../Backend
+npm install
+npm run db:setup
+npm run dev
+```
+
+Depois rode o frontend em outro terminal.
+
+Em emulador Android, talvez seja necessário trocar `localhost` por `10.0.2.2` em `apiConfig.ts`, porque o emulador trata `localhost` como o próprio dispositivo virtual.
 
 ## Como rodar
 
@@ -198,9 +226,9 @@ Executa o lint configurado no projeto.
 
 ## Dados mockados
 
-O projeto não depende de backend real.
+O frontend agora consome a API local do backend.
 
-Estão mockados:
+No backend ainda existem dados iniciais de demonstração para:
 
 - autenticação;
 - usuário inicial;
@@ -212,10 +240,10 @@ Estão mockados:
 - posição atual do usuário;
 - distância calculada para simular rota.
 
-Os principais mocks ficam em:
+Os principais dados iniciais ficam no backend em:
 
 ```txt
-src/shared/constants/mockData.ts
+Backend/src/data/mockData.ts
 ```
 
 ## Estrutura do projeto
