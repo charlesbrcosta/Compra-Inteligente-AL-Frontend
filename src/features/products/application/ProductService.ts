@@ -11,4 +11,16 @@ export class ProductService {
   save(products: ShoppingProduct[]) {
     return this.repository.save(products);
   }
+
+  create(product: ShoppingProduct) {
+    return this.repository.create(product);
+  }
+
+  update(product: ShoppingProduct) {
+    return this.repository.update(product);
+  }
+
+  remove(id: string) {
+    return this.repository.remove(id);
+  }
 }

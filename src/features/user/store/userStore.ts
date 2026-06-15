@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 import { UserService } from '@/features/user/application/UserService';
-import { AsyncStorageUserRepository } from '@/features/user/infrastructure/AsyncStorageUserRepository';
+import { ApiUserRepository } from '@/features/user/infrastructure/ApiUserRepository';
 import { User } from '@/shared/types/entities';
 
 interface UserState {
@@ -10,7 +10,7 @@ interface UserState {
   saveUser: (user: User) => Promise<void>;
 }
 
-const service = new UserService(new AsyncStorageUserRepository());
+const service = new UserService(new ApiUserRepository());
 
 export const useUserStore = create<UserState>((set) => ({
   user: null,

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 import { ProductService } from '@/features/products/application/ProductService';
-import { AsyncStorageProductRepository } from '@/features/products/infrastructure/AsyncStorageProductRepository';
+import { ApiProductRepository } from '@/features/products/infrastructure/ApiProductRepository';
 import { ShoppingProduct } from '@/shared/types/entities';
 
 interface ProductState {
@@ -12,7 +12,7 @@ interface ProductState {
   removeProduct: (id: string) => Promise<void>;
 }
 
-const service = new ProductService(new AsyncStorageProductRepository());
+const service = new ProductService(new ApiProductRepository());
 
 export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
@@ -21,18 +21,18 @@ export const useProductStore = create<ProductState>((set, get) => ({
     set({ products });
   },
   addProduct: async (product) => {
-    const products = [...get().products, product];
-    await service.save(products);
+    const savedProduct = await service.create(product);
+    const products = [...get().products, savedProduct];
     set({ products });
   },
   updateProduct: async (product) => {
-    const products = get().products.map((current) => (current.id === product.id ? product : current));
-    await service.save(products);
+    const savedProduct = await service.update(product);
+    const products = get().products.map((current) => (current.id === savedProduct.id ? savedProduct : current));
     set({ products });
   },
   removeProduct: async (id) => {
+    await service.remove(id);
     const products = get().products.filter((product) => product.id !== id);
-    await service.save(products);
     set({ products });
   },
 }));

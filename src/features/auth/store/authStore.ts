@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import { AsyncStorageAuthRepository } from '@/features/auth/infrastructure/AsyncStorageAuthRepository';
+import { ApiAuthRepository } from '@/features/auth/infrastructure/ApiAuthRepository';
 import { AuthSession } from '@/features/auth/domain/AuthRepository';
 import { User } from '@/shared/types/entities';
 
@@ -13,7 +13,7 @@ interface AuthState {
   logout: () => Promise<void>;
 }
 
-const repository = new AsyncStorageAuthRepository();
+const repository = new ApiAuthRepository();
 
 export const useAuthStore = create<AuthState>((set) => ({
   session: null,

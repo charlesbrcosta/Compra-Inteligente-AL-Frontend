@@ -6,20 +6,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '@/shared/components/Card';
 import { Header } from '@/shared/components/Header';
 import { MarketCard } from '@/shared/components/MarketCard';
-import { mockCurrentLocation } from '@/shared/constants/mockData';
 import { formatCurrency, formatFuelConsumption } from '@/shared/utils/formatters';
-import { useMarkets } from '@/features/markets/presentation/useMarkets';
 import { useProductStore } from '@/features/products/store/productStore';
 import { useUserStore } from '@/features/user/store/userStore';
 import { useVehicleStore } from '@/features/vehicle/store/vehicleStore';
 import { useRecommendations } from '@/features/recommendations/presentation/useRecommendations';
 
 export function HomeScreen() {
-  const { markets } = useMarkets();
   const { products, loadProducts } = useProductStore();
   const { user, loadUser } = useUserStore();
   const { vehicle, loadVehicle } = useVehicleStore();
-  const recommendations = useRecommendations(products, markets, vehicle, mockCurrentLocation);
+  const { recommendations, loadRecommendations } = useRecommendations();
   const best = recommendations[0];
 
   useFocusEffect(
@@ -27,7 +24,8 @@ export function HomeScreen() {
       loadUser();
       loadVehicle();
       loadProducts();
-    }, [loadProducts, loadUser, loadVehicle]),
+      loadRecommendations();
+    }, [loadProducts, loadRecommendations, loadUser, loadVehicle]),
   );
 
   return (
