@@ -5,8 +5,6 @@ import { formatCurrency, formatDistance } from '@/shared/utils/formatters';
 
 export function RecommendationCard({ recommendation }: { recommendation: Recommendation }) {
   const routeConditions = recommendation.routeConditions ?? [];
-  const routeCalculation = getRouteCalculationLabel(recommendation.market.distanceSource);
-  const establishmentSource = recommendation.market.id.startsWith('sefaz-') ? 'SEFAZ/AL' : 'cadastro interno';
 
   return (
     <View
@@ -25,8 +23,6 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
       <View className="mt-4 gap-2">
         <Row label="Produtos" value={formatCurrency(recommendation.productsTotal)} />
         <Row label="Distancia" value={formatDistance(recommendation.market.distanceKm)} />
-        <Row label="Calculo da rota" value={routeCalculation} />
-        <Row label="Origem do estabelecimento" value={establishmentSource} />
         <Row label="Combustivel base" value={formatCurrency(recommendation.baseDisplacementCost ?? recommendation.displacementCost)} />
         <Row label="Impacto do percurso" value={`${formatCurrency(recommendation.routeImpactCost ?? 0)} (${Math.round((recommendation.routeImpactPercent ?? 0) * 100)}%)`} />
         <Row label="Combustivel ajustado" value={formatCurrency(recommendation.displacementCost)} />
@@ -55,18 +51,6 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
       ) : null}
     </View>
   );
-}
-
-function getRouteCalculationLabel(distanceSource: Recommendation['market']['distanceSource']) {
-  if (distanceSource === 'openrouteservice') {
-    return 'rota calculada por servico de mapas';
-  }
-
-  if (distanceSource === 'osrm') {
-    return 'rota calculada por servico de mapas';
-  }
-
-  return 'estimativa por coordenadas';
 }
 
 function Row({ label, value, isStrong = false }: { label: string; value: string; isStrong?: boolean }) {
