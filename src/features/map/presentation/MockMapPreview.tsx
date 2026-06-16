@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Text, View } from 'react-native';
-import { WebView } from 'react-native-webview';
 
+import { MapHtmlView } from '@/features/map/presentation/MapHtmlView';
 import { apiRequest } from '@/shared/api/apiClient';
 import { GeoLocation, Market } from '@/shared/types/entities';
 import { formatDistance } from '@/shared/utils/formatters';
@@ -79,13 +79,7 @@ export function MockMapPreview({ currentLocation, market }: { currentLocation: G
       </View>
 
       <View className="mt-4 h-80 overflow-hidden rounded-lg border border-slate-200">
-        <WebView
-          originWhitelist={['*']}
-          javaScriptEnabled
-          domStorageEnabled
-          source={{ html }}
-          style={{ backgroundColor: '#e2e8f0', flex: 1 }}
-        />
+        <MapHtmlView html={html} />
       </View>
 
       <View className="mt-3 gap-2">
