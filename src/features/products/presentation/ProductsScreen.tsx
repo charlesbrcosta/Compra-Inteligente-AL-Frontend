@@ -1,8 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Text, View } from 'react-native';
+import { Alert, ScrollView, Text, View } from 'react-native';
 
 import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
@@ -28,6 +28,7 @@ export function ProductsScreen() {
   const [sefazError, setSefazError] = useState<string | null>(null);
   const [sefazProducts, setSefazProducts] = useState<SefazProductPrice[]>([]);
   const [isSefazLoading, setIsSefazLoading] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: { name: '', quantity: 1, unit: 'un' },
@@ -64,6 +65,9 @@ export function ProductsScreen() {
   const startEdit = (product: ShoppingProduct) => {
     setEditingProduct(product);
     form.reset({ name: product.name, quantity: product.quantity, unit: product.unit });
+    requestAnimationFrame(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    });
   };
 
   const confirmRemove = (product: ShoppingProduct) => {
@@ -121,7 +125,7 @@ export function ProductsScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer scrollViewRef={scrollViewRef}>
         <Header title="Lista de compras" subtitle="Informe quantidade e unidade para comparar os mercados mockados." />
         {error ? (
           <View className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
