@@ -41,11 +41,15 @@ totalFinal = totalProdutos + custoDeslocamentoAjustado
 
 O melhor mercado é aquele com o menor `totalFinal`.
 
-## Origem da distancia
+## Origem dos dados e calculo da rota
 
-Quando o backend consegue consultar o OpenRouteService, a recomendacao marca a distancia como `openrouteservice`.
+Os dados do estabelecimento, como nome, endereco e coordenadas, podem vir da SEFAZ quando a integracao real estiver sendo usada.
 
-Quando a API externa nao esta disponivel, a recomendacao usa `local_estimate`, que calcula a distancia por coordenadas mockadas com fator de rota.
+O OpenRouteService nao e a origem dos estabelecimentos. Ele e usado apenas para calcular a rota/distancia entre a posicao do usuario e as coordenadas do estabelecimento.
+
+Quando o backend consegue consultar o OpenRouteService, a recomendacao marca o calculo da rota como `openrouteservice`.
+
+Quando a API externa nao esta disponivel, a recomendacao usa `local_estimate`, que calcula a distancia por coordenadas com fator de rota.
 
 ## Historico
 

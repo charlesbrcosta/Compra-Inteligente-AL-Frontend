@@ -5,8 +5,11 @@ import { formatCurrency, formatDistance } from '@/shared/utils/formatters';
 
 export function RecommendationCard({ recommendation }: { recommendation: Recommendation }) {
   const routeConditions = recommendation.routeConditions ?? [];
-  const distanceSource =
-    recommendation.market.distanceSource === 'openrouteservice' ? 'OpenRouteService' : 'estimativa local';
+  const routeCalculation =
+    recommendation.market.distanceSource === 'openrouteservice'
+      ? 'rota por OpenRouteService'
+      : 'estimativa por coordenadas';
+  const establishmentSource = recommendation.market.id.startsWith('sefaz-') ? 'SEFAZ/AL' : 'base mockada';
 
   return (
     <View
@@ -25,7 +28,8 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
       <View className="mt-4 gap-2">
         <Row label="Produtos" value={formatCurrency(recommendation.productsTotal)} />
         <Row label="Distancia" value={formatDistance(recommendation.market.distanceKm)} />
-        <Row label="Origem da distancia" value={distanceSource} />
+        <Row label="Calculo da rota" value={routeCalculation} />
+        <Row label="Dados do estabelecimento" value={establishmentSource} />
         <Row label="Combustivel base" value={formatCurrency(recommendation.baseDisplacementCost ?? recommendation.displacementCost)} />
         <Row label="Impacto do percurso" value={`${formatCurrency(recommendation.routeImpactCost ?? 0)} (${Math.round((recommendation.routeImpactPercent ?? 0) * 100)}%)`} />
         <Row label="Combustivel ajustado" value={formatCurrency(recommendation.displacementCost)} />

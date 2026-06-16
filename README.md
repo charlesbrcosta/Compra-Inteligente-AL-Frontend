@@ -57,7 +57,7 @@ A recomendação considera:
 - Filtro de recomendações por todos os mercados, cidade ou bairro.
 - Tela de impactos do percurso com chuva, acidente, bloqueio, trânsito e obra.
 - Histórico das recomendações calculadas.
-- Indicação se a distância veio do OpenRouteService ou de estimativa local.
+- Indicação se a rota foi calculada pelo OpenRouteService ou por estimativa local.
 - Destaque visual para o mercado mais vantajoso.
 - Interface responsiva para mobile e web.
 - Documentação técnica para evolução futura.
