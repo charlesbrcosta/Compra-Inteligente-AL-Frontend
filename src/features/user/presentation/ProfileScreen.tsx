@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Text, View } from 'react-native';
 
@@ -9,17 +9,23 @@ import { Card } from '@/shared/components/Card';
 import { Header } from '@/shared/components/Header';
 import { Input } from '@/shared/components/Input';
 import { ScreenContainer } from '@/shared/components/ScreenContainer';
+import { ApiSefazRepository } from '@/features/sefaz/infrastructure/ApiSefazRepository';
 import { createId } from '@/shared/utils/id';
+import { formatCurrency } from '@/shared/utils/formatters';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { UserFormData, userSchema } from '@/features/user/presentation/userSchemas';
 import { useUserStore } from '@/features/user/store/userStore';
 import { VehicleFormData, vehicleSchema } from '@/features/vehicle/presentation/vehicleSchemas';
 import { useVehicleStore } from '@/features/vehicle/store/vehicleStore';
 
+const sefazRepository = new ApiSefazRepository();
+
 export function ProfileScreen() {
   const logout = useAuthStore((state) => state.logout);
   const { user, loadUser, saveUser } = useUserStore();
   const { vehicle, loadVehicle, saveVehicle } = useVehicleStore();
+  const [fuelLookupMessage, setFuelLookupMessage] = useState<string | null>(null);
+  const [isFuelLookupLoading, setIsFuelLookupLoading] = useState(false);
 
   const userForm = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
@@ -84,6 +90,22 @@ export function ProfileScreen() {
     });
   });
 
+  const updateFuelPriceFromSefaz = async () => {
+    try {
+      setFuelLookupMessage(null);
+      setIsFuelLookupLoading(true);
+      const summary = await sefazRepository.getCurrentFuelPrice();
+      vehicleForm.setValue('fuelPricePerLiter', summary.averagePrice, { shouldDirty: true, shouldValidate: true });
+      setFuelLookupMessage(
+        `Preco medio SEFAZ: ${formatCurrency(summary.averagePrice)} com ${summary.samples} registros recentes.`,
+      );
+    } catch {
+      setFuelLookupMessage('Nao foi possivel consultar o combustivel na SEFAZ agora.');
+    } finally {
+      setIsFuelLookupLoading(false);
+    }
+  };
+
   return (
     <ScreenContainer>
       <Header title="Perfil e veiculo" subtitle="Essas informacoes alimentam a simulacao de economia." />
@@ -116,6 +138,13 @@ export function ProfileScreen() {
             <Controller control={vehicleForm.control} name="fuelPricePerLiter" render={({ field, fieldState }) => <Input keyboardType="numeric" label="Preco do combustivel por litro" onBlur={field.onBlur} onChangeText={field.onChange} value={String(field.value)} error={fieldState.error?.message} />} />
             </View>
           </View>
+          {fuelLookupMessage ? <Text className="text-sm text-muted">{fuelLookupMessage}</Text> : null}
+          <Button
+            title="Buscar combustivel na SEFAZ"
+            variant="secondary"
+            isLoading={isFuelLookupLoading}
+            onPress={updateFuelPriceFromSefaz}
+          />
           <Button title="Salvar veiculo" onPress={submitVehicle} isLoading={vehicleForm.formState.isSubmitting} />
         </Card>
 

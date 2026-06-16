@@ -12,15 +12,22 @@ import { Input } from '@/shared/components/Input';
 import { Loading } from '@/shared/components/Loading';
 import { ProductCard } from '@/shared/components/ProductCard';
 import { ScreenContainer } from '@/shared/components/ScreenContainer';
+import { ApiSefazRepository } from '@/features/sefaz/infrastructure/ApiSefazRepository';
 import { createId } from '@/shared/utils/id';
-import { ShoppingProduct } from '@/shared/types/entities';
+import { SefazProductPrice, ShoppingProduct } from '@/shared/types/entities';
+import { formatCurrency } from '@/shared/utils/formatters';
 import { ProductFormData, productSchema } from '@/features/products/presentation/productSchemas';
 import { useProductStore } from '@/features/products/store/productStore';
+
+const sefazRepository = new ApiSefazRepository();
 
 export function ProductsScreen() {
   const { products, addProduct, updateProduct, removeProduct, loadProducts, clearError, error, isLoading, isSaving } =
     useProductStore();
   const [editingProduct, setEditingProduct] = useState<ShoppingProduct | null>(null);
+  const [sefazError, setSefazError] = useState<string | null>(null);
+  const [sefazProducts, setSefazProducts] = useState<SefazProductPrice[]>([]);
+  const [isSefazLoading, setIsSefazLoading] = useState(false);
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: { name: '', quantity: 1, unit: 'un' },
@@ -66,6 +73,26 @@ export function ProductsScreen() {
     ]);
   };
 
+  const searchSefazProducts = async () => {
+    const name = form.getValues('name');
+
+    if (name.trim().length < 2) {
+      setSefazError('Informe o nome do produto para consultar a SEFAZ.');
+      return;
+    }
+
+    try {
+      setSefazError(null);
+      setIsSefazLoading(true);
+      const data = await sefazRepository.searchProducts(name);
+      setSefazProducts(data.products);
+    } catch {
+      setSefazError('Nao foi possivel consultar produtos na SEFAZ agora.');
+    } finally {
+      setIsSefazLoading(false);
+    }
+  };
+
   if (isLoading && products.length === 0) {
     return <Loading label="Carregando produtos" />;
   }
@@ -98,6 +125,12 @@ export function ProductsScreen() {
             title={editingProduct ? 'Salvar alteracoes' : 'Adicionar produto'}
             onPress={submit}
           />
+          <Button
+            isLoading={isSefazLoading}
+            title="Consultar precos reais na SEFAZ"
+            variant="secondary"
+            onPress={searchSefazProducts}
+          />
           {editingProduct ? (
             <Button
               title="Cancelar edicao"
@@ -109,6 +142,32 @@ export function ProductsScreen() {
             />
           ) : null}
         </Card>
+
+        {sefazError ? (
+          <View className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3">
+            <Text className="text-sm font-semibold text-red-700">{sefazError}</Text>
+          </View>
+        ) : null}
+
+        {sefazProducts.length > 0 ? (
+          <View className="mt-5 gap-3">
+            <Text className="text-lg font-bold text-ink">Precos reais da SEFAZ</Text>
+            {sefazProducts.slice(0, 8).map((product) => (
+              <View key={`${product.cnpj}-${product.productName}-${product.saleDate}`} className="rounded-lg border border-slate-200 bg-white p-4">
+                <View className="gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <View className="min-w-0 flex-1">
+                    <Text className="text-base font-bold text-ink">{product.productName}</Text>
+                    <Text className="mt-1 text-sm text-muted">{product.marketName}</Text>
+                    <Text className="mt-1 text-xs text-slate-600">
+                      {product.neighborhood}, {product.city}
+                    </Text>
+                  </View>
+                  <Text className="text-lg font-bold text-primary">{formatCurrency(product.price)}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        ) : null}
 
         <View className="mt-5 gap-3">
           <Text className="text-lg font-bold text-ink">Produtos cadastrados</Text>

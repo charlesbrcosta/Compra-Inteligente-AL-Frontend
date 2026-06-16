@@ -82,3 +82,47 @@ export interface RecommendationHistory {
   createdAt: string;
   recommendations: Recommendation[];
 }
+
+export interface SefazProductPrice {
+  productName: string;
+  sefazDescription?: string;
+  unit: string;
+  price: number;
+  saleDate: string;
+  gtin?: string;
+  marketName: string;
+  corporateName: string;
+  cnpj: string;
+  address: string;
+  neighborhood: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface SefazFuelPrice {
+  fuelType: FuelType;
+  productName: string;
+  unit: string;
+  price: number;
+  saleDate: string;
+  stationName: string;
+  corporateName: string;
+  cnpj: string;
+  address: string;
+  neighborhood: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface SefazFuelSummary {
+  source: 'sefaz';
+  fuelType: FuelType;
+  averagePrice: number;
+  lowestPrice: number;
+  highestPrice: number;
+  samples: number;
+  cityIbgeCode: number;
+  prices: SefazFuelPrice[];
+}

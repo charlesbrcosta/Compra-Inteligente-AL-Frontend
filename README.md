@@ -49,7 +49,9 @@ A recomendação considera:
 - Persistência local com AsyncStorage.
 - Cadastro de usuário com nome, e-mail, cidade e bairro.
 - Cadastro de veículo com modelo, tipo de combustível, consumo médio e preço por litro.
-- Lista manual de produtos com adicionar, editar e remover enquanto a integracao com SEFAZ nao existe.
+- Lista manual de produtos com adicionar, editar e remover.
+- Consulta de preços reais de produtos pela API da SEFAZ via backend.
+- Consulta de preço real de combustível pela API da SEFAZ via backend.
 - Mercados mockados de Alagoas com preços, coordenadas e produtos disponíveis.
 - Cálculo de recomendação considerando km rodado do veículo.
 - Filtro de recomendações por todos os mercados, cidade ou bairro.

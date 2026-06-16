@@ -51,6 +51,15 @@ Quando a API externa nao esta disponivel, a recomendacao usa `local_estimate`, q
 
 Sempre que uma recomendacao e calculada, o backend salva um snapshot do resultado no SQLite. Esse historico permite comparar recomendacoes anteriores mesmo antes da integracao com SEFAZ.
 
+## Integracao SEFAZ
+
+O app nao chama a SEFAZ diretamente. O frontend chama o backend, e o backend usa `SEFAZ_APP_TOKEN` para consultar:
+
+- produtos por descricao;
+- combustivel pelo tipo cadastrado no veiculo.
+
+O preco de combustivel retornado pela SEFAZ pode preencher o campo `precoCombustivelPorLitro`, melhorando o calculo de deslocamento.
+
 ## Economia estimada
 
 Para cada mercado que não é o melhor, a diferença exibida é:
