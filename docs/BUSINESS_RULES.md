@@ -51,6 +51,8 @@ Quando o backend consegue consultar o OpenRouteService, a recomendacao marca o c
 
 Quando a API externa nao esta disponivel, a recomendacao usa `local_estimate`, que calcula a distancia por coordenadas com fator de rota.
 
+No mapa, o app exibe OpenStreetMap com Leaflet. A geometria da rota vem do backend: primeiro OpenRouteService, depois OSRM publico como fallback gratuito para evitar rota em linha reta.
+
 ## Historico
 
 Sempre que uma recomendacao e calculada, o backend salva um snapshot do resultado no SQLite. Esse historico permite comparar recomendacoes anteriores mesmo antes da integracao com SEFAZ.

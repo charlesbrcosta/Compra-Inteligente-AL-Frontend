@@ -58,6 +58,7 @@ A recomendação considera:
 - Tela de impactos do percurso com chuva, acidente, bloqueio, trânsito e obra.
 - Histórico das recomendações calculadas.
 - Indicação se a rota foi calculada pelo OpenRouteService ou por estimativa local.
+- Mapa interativo com OpenStreetMap/Leaflet, zoom, pan e rota por ruas.
 - Destaque visual para o mercado mais vantajoso.
 - Interface responsiva para mobile e web.
 - Documentação técnica para evolução futura.
