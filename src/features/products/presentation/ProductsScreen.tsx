@@ -14,7 +14,7 @@ import { ProductCard } from '@/shared/components/ProductCard';
 import { ScreenContainer } from '@/shared/components/ScreenContainer';
 import { ApiSefazRepository } from '@/features/sefaz/infrastructure/ApiSefazRepository';
 import { createId } from '@/shared/utils/id';
-import { SefazProductPrice, ShoppingProduct } from '@/shared/types/entities';
+import { SefazProductPrice, ShoppingProduct, UnitType } from '@/shared/types/entities';
 import { formatCurrency } from '@/shared/utils/formatters';
 import { ProductFormData, productSchema } from '@/features/products/presentation/productSchemas';
 import { useProductStore } from '@/features/products/store/productStore';
@@ -93,6 +93,29 @@ export function ProductsScreen() {
     }
   };
 
+  const addSefazProductToList = async (sefazProduct: SefazProductPrice) => {
+    const name = normalizeSefazProductName(sefazProduct);
+    const unit = normalizeSefazUnit(sefazProduct.unit);
+    const alreadyExists = products.some((product) => normalizeText(product.name) === normalizeText(name));
+
+    if (alreadyExists) {
+      Alert.alert('Produto ja cadastrado', `${name} ja esta na sua lista de compras.`);
+      return;
+    }
+
+    try {
+      await addProduct({
+        id: createId(),
+        name,
+        quantity: 1,
+        unit,
+      });
+      Alert.alert('Produto adicionado', `${name} foi adicionado a sua lista.`);
+    } catch {
+      // The store keeps the user-facing error message.
+    }
+  };
+
   if (isLoading && products.length === 0) {
     return <Loading label="Carregando produtos" />;
   }
@@ -162,7 +185,15 @@ export function ProductsScreen() {
                       {product.neighborhood}, {product.city}
                     </Text>
                   </View>
-                  <Text className="text-lg font-bold text-primary">{formatCurrency(product.price)}</Text>
+                  <View className="items-stretch gap-2 sm:items-end">
+                    <Text className="text-lg font-bold text-primary">{formatCurrency(product.price)}</Text>
+                    <Button
+                      title="Adicionar a lista"
+                      variant="secondary"
+                      isLoading={isSaving}
+                      onPress={() => addSefazProductToList(product)}
+                    />
+                  </View>
                 </View>
               </View>
             ))}
@@ -186,4 +217,46 @@ export function ProductsScreen() {
         </View>
     </ScreenContainer>
   );
+}
+
+function normalizeSefazProductName(product: SefazProductPrice) {
+  return (product.sefazDescription || product.productName).trim();
+}
+
+function normalizeSefazUnit(unit: string): UnitType {
+  const normalizedUnit = unit.toLowerCase().trim();
+
+  if (normalizedUnit.includes('kg')) {
+    return 'kg';
+  }
+
+  if (normalizedUnit === 'g' || normalizedUnit.includes('grama')) {
+    return 'g';
+  }
+
+  if (normalizedUnit === 'l' || normalizedUnit.includes('litro')) {
+    return 'l';
+  }
+
+  if (normalizedUnit === 'ml') {
+    return 'ml';
+  }
+
+  if (normalizedUnit.includes('pacote') || normalizedUnit === 'pct') {
+    return 'pct';
+  }
+
+  if (normalizedUnit.includes('caixa') || normalizedUnit === 'cx') {
+    return 'cx';
+  }
+
+  return 'un';
+}
+
+function normalizeText(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
 }
