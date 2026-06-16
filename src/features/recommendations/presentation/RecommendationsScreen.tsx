@@ -2,24 +2,24 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { EmptyState } from '@/shared/components/EmptyState';
-import { Header } from '@/shared/components/Header';
-import { Loading } from '@/shared/components/Loading';
-import { RecommendationCard } from '@/shared/components/RecommendationCard';
-import { ScreenContainer } from '@/shared/components/ScreenContainer';
 import { MockMapPreview } from '@/features/map/presentation/MockMapPreview';
 import { useCurrentLocation } from '@/features/map/presentation/useCurrentLocation';
 import { useProductStore } from '@/features/products/store/productStore';
 import { useVehicleStore } from '@/features/vehicle/store/vehicleStore';
 import { useRecommendations } from '@/features/recommendations/presentation/useRecommendations';
 import { useUserStore } from '@/features/user/store/userStore';
+import { EmptyState } from '@/shared/components/EmptyState';
+import { Header } from '@/shared/components/Header';
+import { Loading } from '@/shared/components/Loading';
+import { RecommendationCard } from '@/shared/components/RecommendationCard';
+import { ScreenContainer } from '@/shared/components/ScreenContainer';
 
 type MarketFilter = 'all' | 'city' | 'neighborhood';
 
 export function RecommendationsScreen() {
   const { products, loadProducts } = useProductStore();
   const { user, loadUser } = useUserStore();
-  const { vehicle, loadVehicle } = useVehicleStore();
+  const { loadVehicle } = useVehicleStore();
   const { recommendations, isLoading, loadRecommendations } = useRecommendations();
   const {
     currentLocation,
@@ -69,6 +69,11 @@ export function RecommendationsScreen() {
     });
   }, [filter, recommendations, user]);
 
+  const mapMarket = useMemo(
+    () => filteredRecommendations.find((recommendation) => recommendation.isBest)?.market ?? filteredRecommendations[0]?.market,
+    [filteredRecommendations],
+  );
+
   if (isLoading) {
     return <Loading label="Calculando recomendacoes" />;
   }
@@ -81,21 +86,22 @@ export function RecommendationsScreen() {
       />
 
       <View className="gap-3">
-          <View className="flex-row flex-wrap gap-2">
+        <View className="flex-row flex-wrap gap-2">
           <FilterButton isActive={filter === 'all'} label="Todos" onPress={() => setFilter('all')} />
           <FilterButton isActive={filter === 'city'} label="Cidade" onPress={() => setFilter('city')} />
           <FilterButton isActive={filter === 'neighborhood'} label="Bairro" onPress={() => setFilter('neighborhood')} />
+        </View>
+
+        {locationError ? (
+          <View className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <Text className="text-sm font-semibold text-amber-900">{locationError}</Text>
           </View>
-
-          {locationError ? (
-            <View className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-              <Text className="text-sm font-semibold text-amber-900">{locationError}</Text>
-            </View>
-          ) : null}
-
-          {currentLocation ? (
-          <MockMapPreview currentLocation={currentLocation} markets={filteredRecommendations.map((item) => item.market)} />
         ) : null}
+
+        {currentLocation && mapMarket ? (
+          <MockMapPreview currentLocation={currentLocation} market={mapMarket} />
+        ) : null}
+
         {products.length === 0 ? (
           <EmptyState title="Nenhum produto na lista" description="Adicione produtos para comparar supermercados e atacadistas." />
         ) : filteredRecommendations.length === 0 ? (

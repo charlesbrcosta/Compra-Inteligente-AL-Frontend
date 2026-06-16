@@ -5,10 +5,7 @@ import { formatCurrency, formatDistance } from '@/shared/utils/formatters';
 
 export function RecommendationCard({ recommendation }: { recommendation: Recommendation }) {
   const routeConditions = recommendation.routeConditions ?? [];
-  const routeCalculation =
-    recommendation.market.distanceSource === 'openrouteservice'
-      ? 'rota por OpenRouteService'
-      : 'estimativa por coordenadas';
+  const routeCalculation = getRouteCalculationLabel(recommendation.market.distanceSource);
   const establishmentSource = recommendation.market.id.startsWith('sefaz-') ? 'SEFAZ/AL' : 'base mockada';
 
   return (
@@ -58,6 +55,18 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
       ) : null}
     </View>
   );
+}
+
+function getRouteCalculationLabel(distanceSource: Recommendation['market']['distanceSource']) {
+  if (distanceSource === 'openrouteservice') {
+    return 'rota por ruas';
+  }
+
+  if (distanceSource === 'osrm') {
+    return 'rota por ruas';
+  }
+
+  return 'estimativa por coordenadas';
 }
 
 function Row({ label, value, isStrong = false }: { label: string; value: string; isStrong?: boolean }) {

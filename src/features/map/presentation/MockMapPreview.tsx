@@ -18,8 +18,8 @@ interface RouteResponse {
   source: 'openrouteservice' | 'osrm' | 'local_estimate';
 }
 
-export function MockMapPreview({ currentLocation, markets }: { currentLocation: GeoLocation; markets: Market[] }) {
-  const targetMarket = markets.find((market) => market.location.latitude !== 0 && market.location.longitude !== 0);
+export function MockMapPreview({ currentLocation, market }: { currentLocation: GeoLocation; market?: Market }) {
+  const targetMarket = market?.location.latitude !== 0 && market?.location.longitude !== 0 ? market : undefined;
   const [route, setRoute] = useState<RouteResponse | null>(null);
   const routeConditions = targetMarket?.routeConditions ?? [];
 
@@ -73,7 +73,7 @@ export function MockMapPreview({ currentLocation, markets }: { currentLocation: 
       <View className="gap-1 sm:flex-row sm:items-center sm:justify-between">
         <View className="min-w-0 flex-1">
           <Text className="text-base font-bold text-ink">Mapa interativo da rota</Text>
-          <Text className="mt-1 text-xs text-muted">OpenStreetMap com zoom, pan e rota por ruas quando disponivel.</Text>
+          <Text className="mt-1 text-xs text-muted">OpenStreetMap com zoom, pan e rota do mercado recomendado.</Text>
         </View>
         {targetMarket ? <Text className="text-sm font-semibold text-primary">{formatDistance(targetMarket.distanceKm)}</Text> : null}
       </View>
@@ -92,7 +92,7 @@ export function MockMapPreview({ currentLocation, markets }: { currentLocation: 
         <View className="flex-row flex-wrap justify-between gap-x-3 gap-y-1">
           <Text className="min-w-0 flex-1 text-sm font-semibold text-ink">{targetMarket?.name ?? currentLocation.label}</Text>
           <Text className="text-xs font-semibold text-muted">
-            {route?.source === 'local_estimate' ? 'Estimativa local' : 'Rota por ruas'}
+            {getRouteSourceLabel(route?.source)}
           </Text>
         </View>
 
@@ -117,6 +117,14 @@ export function MockMapPreview({ currentLocation, markets }: { currentLocation: 
       </View>
     </View>
   );
+}
+
+function getRouteSourceLabel(source?: RouteResponse['source']) {
+  if (!source) {
+    return 'Calculando rota';
+  }
+
+  return source === 'local_estimate' ? 'Estimativa local' : 'Rota por ruas';
 }
 
 function buildLeafletHtml(currentLocation: GeoLocation, targetMarket?: Market, route?: RouteResponse | null) {
