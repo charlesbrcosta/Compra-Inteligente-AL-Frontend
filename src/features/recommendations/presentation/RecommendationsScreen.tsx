@@ -13,6 +13,7 @@ import { Header } from '@/shared/components/Header';
 import { Loading } from '@/shared/components/Loading';
 import { RecommendationCard } from '@/shared/components/RecommendationCard';
 import { ScreenContainer } from '@/shared/components/ScreenContainer';
+import { Recommendation } from '@/shared/types/entities';
 
 type MarketFilter = 'all' | 'city' | 'neighborhood';
 
@@ -53,25 +54,26 @@ export function RecommendationsScreen() {
       return recommendations;
     }
 
-    const normalize = (value: string) =>
-      value
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .trim();
-
     return recommendations.filter((recommendation) => {
       if (filter === 'city') {
         return normalize(recommendation.market.city) === normalize(user.city);
       }
 
-      return normalize(recommendation.market.neighborhood) === normalize(user.neighborhood);
+      return (
+        normalize(recommendation.market.city) === normalize(user.city) &&
+        normalize(recommendation.market.neighborhood) === normalize(user.neighborhood)
+      );
     });
   }, [filter, recommendations, user]);
 
-  const mapMarket = useMemo(
-    () => filteredRecommendations.find((recommendation) => recommendation.isBest)?.market ?? filteredRecommendations[0]?.market,
+  const visibleRecommendations = useMemo(
+    () => markBestRecommendationForActiveFilter(filteredRecommendations),
     [filteredRecommendations],
+  );
+
+  const mapMarket = useMemo(
+    () => visibleRecommendations.find((recommendation) => recommendation.isBest)?.market ?? visibleRecommendations[0]?.market,
+    [visibleRecommendations],
   );
 
   if (isLoading) {
@@ -104,16 +106,38 @@ export function RecommendationsScreen() {
 
         {products.length === 0 ? (
           <EmptyState title="Nenhum produto na lista" description="Adicione produtos para comparar supermercados e atacadistas." />
-        ) : filteredRecommendations.length === 0 ? (
+        ) : visibleRecommendations.length === 0 ? (
           <EmptyState title="Sem mercados nesse filtro" description="Altere o filtro ou atualize cidade e bairro no perfil." />
         ) : (
-          filteredRecommendations.map((recommendation) => (
+          visibleRecommendations.map((recommendation) => (
             <RecommendationCard key={recommendation.market.id} recommendation={recommendation} />
           ))
         )}
       </View>
     </ScreenContainer>
   );
+}
+
+function markBestRecommendationForActiveFilter(recommendations: Recommendation[]) {
+  const bestRecommendation = recommendations[0];
+
+  if (!bestRecommendation) {
+    return [];
+  }
+
+  return recommendations.map((recommendation) => ({
+    ...recommendation,
+    estimatedSavings: Math.max(0, recommendation.finalTotal - bestRecommendation.finalTotal),
+    isBest: recommendation.market.id === bestRecommendation.market.id,
+  }));
+}
+
+function normalize(value: string) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
 }
 
 function FilterButton({ isActive, label, onPress }: { isActive: boolean; label: string; onPress: () => void }) {
