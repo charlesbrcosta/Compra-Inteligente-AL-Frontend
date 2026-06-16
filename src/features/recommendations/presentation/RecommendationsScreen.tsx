@@ -1,5 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { EmptyState } from '@/shared/components/EmptyState';
@@ -21,7 +21,13 @@ export function RecommendationsScreen() {
   const { user, loadUser } = useUserStore();
   const { vehicle, loadVehicle } = useVehicleStore();
   const { recommendations, isLoading, loadRecommendations } = useRecommendations();
-  const { currentLocation, loadCurrentLocation } = useCurrentLocation();
+  const {
+    currentLocation,
+    loadCurrentLocation,
+    locationError,
+    startWatchingLocation,
+    stopWatchingLocation,
+  } = useCurrentLocation();
   const [filter, setFilter] = useState<MarketFilter>('all');
 
   useFocusEffect(
@@ -29,10 +35,18 @@ export function RecommendationsScreen() {
       loadProducts();
       loadUser();
       loadVehicle();
-      loadRecommendations();
       loadCurrentLocation();
-    }, [loadCurrentLocation, loadProducts, loadRecommendations, loadUser, loadVehicle]),
+      startWatchingLocation();
+
+      return () => {
+        stopWatchingLocation();
+      };
+    }, [loadCurrentLocation, loadProducts, loadUser, loadVehicle, startWatchingLocation, stopWatchingLocation]),
   );
+
+  useEffect(() => {
+    loadRecommendations(currentLocation ?? undefined);
+  }, [currentLocation, loadRecommendations]);
 
   const filteredRecommendations = useMemo(() => {
     if (!user || filter === 'all') {
@@ -67,13 +81,19 @@ export function RecommendationsScreen() {
       />
 
       <View className="gap-3">
-        <View className="flex-row flex-wrap gap-2">
+          <View className="flex-row flex-wrap gap-2">
           <FilterButton isActive={filter === 'all'} label="Todos" onPress={() => setFilter('all')} />
           <FilterButton isActive={filter === 'city'} label="Cidade" onPress={() => setFilter('city')} />
           <FilterButton isActive={filter === 'neighborhood'} label="Bairro" onPress={() => setFilter('neighborhood')} />
-        </View>
+          </View>
 
-        {currentLocation ? (
+          {locationError ? (
+            <View className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+              <Text className="text-sm font-semibold text-amber-900">{locationError}</Text>
+            </View>
+          ) : null}
+
+          {currentLocation ? (
           <MockMapPreview currentLocation={currentLocation} markets={filteredRecommendations.map((item) => item.market)} />
         ) : null}
         {products.length === 0 ? (

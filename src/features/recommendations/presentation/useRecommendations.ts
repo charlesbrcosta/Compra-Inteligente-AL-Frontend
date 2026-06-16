@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { ApiRecommendationRepository } from '@/features/recommendations/infrastructure/ApiRecommendationRepository';
-import { Recommendation, RecommendationHistory } from '@/shared/types/entities';
+import { GeoLocation, Recommendation, RecommendationHistory } from '@/shared/types/entities';
 
 const repository = new ApiRecommendationRepository();
 
@@ -11,11 +11,11 @@ export const useRecommendations = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
 
-  const loadRecommendations = useCallback(async () => {
+  const loadRecommendations = useCallback(async (currentLocation?: GeoLocation) => {
     setIsLoading(true);
 
     try {
-      const data = await repository.list();
+      const data = await repository.list(currentLocation);
       setRecommendations(data);
     } finally {
       setIsLoading(false);

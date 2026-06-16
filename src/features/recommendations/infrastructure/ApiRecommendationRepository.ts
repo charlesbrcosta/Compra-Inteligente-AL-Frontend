@@ -1,9 +1,17 @@
 import { RecommendationRepository } from '@/features/recommendations/domain/RecommendationRepository';
 import { apiRequest } from '@/shared/api/apiClient';
-import { Recommendation, RecommendationHistory } from '@/shared/types/entities';
+import { GeoLocation, Recommendation, RecommendationHistory } from '@/shared/types/entities';
 
 export class ApiRecommendationRepository implements RecommendationRepository {
-  list(): Promise<Recommendation[]> {
+  list(currentLocation?: GeoLocation): Promise<Recommendation[]> {
+    if (currentLocation) {
+      return apiRequest<Recommendation[]>('/recommendations', {
+        method: 'POST',
+        authenticated: true,
+        body: JSON.stringify({ currentLocation }),
+      });
+    }
+
     return apiRequest<Recommendation[]>('/recommendations', { authenticated: true });
   }
 

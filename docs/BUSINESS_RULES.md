@@ -2,7 +2,7 @@
 
 ## Custo de deslocamento por km rodado
 
-O deslocamento considera a distância de ida entre a posição atual do usuário e o mercado. No app atual, essa posição e as coordenadas dos mercados são mockadas para simular o que futuramente poderia vir do Google Maps.
+O deslocamento considera a distância de ida entre a posição atual do usuário e o mercado. No app mobile, essa posição vem do GPS do dispositivo em tempo real. Se a permissão de localização for negada ou o app estiver rodando em um ambiente sem GPS, o sistema usa uma posição demonstrativa como fallback.
 
 Depois de calcular a distância de ida, o deslocamento considera ida e volta:
 
