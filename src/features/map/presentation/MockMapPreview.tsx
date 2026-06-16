@@ -146,19 +146,13 @@ function buildLeafletHtml(currentLocation: GeoLocation, targetMarket?: Market, r
     <style>
       html, body, #map { height: 100%; margin: 0; padding: 0; width: 100%; }
       .leaflet-control-attribution { font-size: 10px; }
-      .pulse {
-        animation: pulse 1.4s infinite;
-        background: #f59e0b;
+      .current-location {
+        background: #2563eb;
         border: 3px solid white;
         border-radius: 999px;
-        box-shadow: 0 0 0 rgba(245, 158, 11, 0.6);
-        height: 18px;
-        width: 18px;
-      }
-      @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.6); }
-        70% { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        box-shadow: 0 0 0 8px rgba(37, 99, 235, 0.18);
+        height: 20px;
+        width: 20px;
       }
     </style>
   </head>
@@ -177,37 +171,23 @@ function buildLeafletHtml(currentLocation: GeoLocation, targetMarket?: Market, r
         attribution: '&copy; OpenStreetMap'
       }).addTo(map);
 
-      const originIcon = L.divIcon({
-        className: '',
-        html: '<div style="height:18px;width:18px;border-radius:999px;background:#0f172a;border:3px solid white;"></div>',
-        iconSize: [18, 18],
-        iconAnchor: [9, 9]
-      });
       const destinationIcon = L.divIcon({
         className: '',
         html: '<div style="height:20px;width:20px;border-radius:999px;background:#0f766e;border:3px solid white;"></div>',
         iconSize: [20, 20],
         iconAnchor: [10, 10]
       });
-      const movingIcon = L.divIcon({
+      const currentLocationIcon = L.divIcon({
         className: '',
-        html: '<div class="pulse"></div>',
-        iconSize: [18, 18],
-        iconAnchor: [9, 9]
+        html: '<div class="current-location"></div>',
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
       });
 
-      L.marker(origin, { icon: originIcon }).addTo(map).bindPopup('Sua posicao');
+      L.marker(origin, { icon: currentLocationIcon }).addTo(map).bindPopup('Voce esta aqui');
       L.marker(destination, { icon: destinationIcon }).addTo(map).bindPopup(${JSON.stringify(targetMarket?.name ?? 'Destino')});
 
-      const line = L.polyline(routeCoordinates, { color: '#0f766e', weight: 5, opacity: 0.9 }).addTo(map);
-      const marker = L.marker(routeCoordinates[0], { icon: movingIcon }).addTo(map);
-
-      let index = 0;
-      setInterval(function () {
-        if (!routeCoordinates.length) return;
-        index = (index + 1) % routeCoordinates.length;
-        marker.setLatLng(routeCoordinates[index]);
-      }, Math.max(120, Math.floor(5200 / Math.max(routeCoordinates.length, 1))));
+      L.polyline(routeCoordinates, { color: '#0f766e', weight: 5, opacity: 0.9 }).addTo(map);
 
       map.fitBounds(L.latLngBounds(bounds), { padding: [28, 28] });
     </script>
