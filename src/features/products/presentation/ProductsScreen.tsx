@@ -134,6 +134,12 @@ export function ProductsScreen() {
           </View>
         ) : null}
         <Card className="gap-4">
+          {editingProduct ? (
+            <View className="rounded-lg border border-teal-200 bg-teal-50 p-3">
+              <Text className="text-sm font-bold text-teal-900">Editando produto</Text>
+              <Text className="mt-1 text-xs text-teal-800">{editingProduct.name}</Text>
+            </View>
+          ) : null}
           <Controller control={form.control} name="name" render={({ field, fieldState }) => <Input label="Produto" placeholder="Ex: Arroz parboilizado" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
           <View className="gap-3 sm:flex-row">
             <View className="flex-1">
