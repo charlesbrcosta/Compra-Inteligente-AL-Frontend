@@ -58,9 +58,11 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
 
 function Row({ label, value, isStrong = false }: { label: string; value: string; isStrong?: boolean }) {
   return (
-    <View className="flex-row justify-between gap-4">
-      <Text className={`${isStrong ? 'font-bold text-ink' : 'text-muted'}`}>{label}</Text>
-      <Text className={`${isStrong ? 'font-bold text-ink' : 'font-semibold text-slate-700'}`}>{value}</Text>
+    <View className="flex-row flex-wrap justify-between gap-x-4 gap-y-1">
+      <Text className={`min-w-0 flex-1 ${isStrong ? 'font-bold text-ink' : 'text-muted'}`}>{label}</Text>
+      <Text className={`max-w-full shrink text-right ${isStrong ? 'font-bold text-ink' : 'font-semibold text-slate-700'}`}>
+        {value}
+      </Text>
     </View>
   );
 }

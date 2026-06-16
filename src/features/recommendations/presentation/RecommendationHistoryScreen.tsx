@@ -1,12 +1,12 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
-import { ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, View } from 'react-native';
 
 import { useRecommendations } from '@/features/recommendations/presentation/useRecommendations';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { Header } from '@/shared/components/Header';
 import { Loading } from '@/shared/components/Loading';
+import { ScreenContainer } from '@/shared/components/ScreenContainer';
 import { formatCurrency } from '@/shared/utils/formatters';
 
 export function RecommendationHistoryScreen() {
@@ -23,8 +23,7 @@ export function RecommendationHistoryScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50">
-      <ScrollView contentContainerClassName="p-5 pb-8">
+    <ScreenContainer>
         <Header title="Historico" subtitle="Ultimas recomendacoes calculadas para comparar decisoes anteriores." />
 
         <View className="gap-3">
@@ -53,7 +52,6 @@ export function RecommendationHistoryScreen() {
             })
           )}
         </View>
-      </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }

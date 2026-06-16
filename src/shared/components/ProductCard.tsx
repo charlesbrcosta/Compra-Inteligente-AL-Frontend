@@ -11,18 +11,18 @@ interface ProductCardProps {
 export function ProductCard({ product, onEdit, onRemove }: ProductCardProps) {
   return (
     <View className="rounded-lg border border-slate-200 bg-white p-4">
-      <View className="flex-row items-start justify-between gap-3">
-        <View className="flex-1">
+      <View className="gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <View className="min-w-0 flex-1">
           <Text className="text-base font-semibold text-ink">{product.name}</Text>
           <Text className="mt-1 text-sm text-muted">
             {product.quantity} {product.unit}
           </Text>
         </View>
         <View className="flex-row gap-2">
-          <Pressable className="rounded-lg bg-slate-100 px-3 py-2 active:opacity-80" onPress={onEdit}>
+          <Pressable className="min-h-10 flex-1 items-center justify-center rounded-lg bg-slate-100 px-3 py-2 active:opacity-80 sm:flex-none" onPress={onEdit}>
             <Text className="text-sm font-semibold text-ink">Editar</Text>
           </Pressable>
-          <Pressable className="rounded-lg bg-red-50 px-3 py-2 active:opacity-80" onPress={onRemove}>
+          <Pressable className="min-h-10 flex-1 items-center justify-center rounded-lg bg-red-50 px-3 py-2 active:opacity-80 sm:flex-none" onPress={onRemove}>
             <Text className="text-sm font-semibold text-red-700">Remover</Text>
           </Pressable>
         </View>

@@ -2,8 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Alert, Text, View } from 'react-native';
 
 import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
@@ -12,6 +11,7 @@ import { Header } from '@/shared/components/Header';
 import { Input } from '@/shared/components/Input';
 import { Loading } from '@/shared/components/Loading';
 import { ProductCard } from '@/shared/components/ProductCard';
+import { ScreenContainer } from '@/shared/components/ScreenContainer';
 import { createId } from '@/shared/utils/id';
 import { ShoppingProduct } from '@/shared/types/entities';
 import { ProductFormData, productSchema } from '@/features/products/presentation/productSchemas';
@@ -71,8 +71,7 @@ export function ProductsScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50">
-      <ScrollView contentContainerClassName="p-5 pb-8">
+    <ScreenContainer>
         <Header title="Lista de compras" subtitle="Informe quantidade e unidade para comparar os mercados mockados." />
         {error ? (
           <View className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
@@ -86,7 +85,7 @@ export function ProductsScreen() {
         ) : null}
         <Card className="gap-4">
           <Controller control={form.control} name="name" render={({ field, fieldState }) => <Input label="Produto" placeholder="Ex: Arroz parboilizado" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
-          <View className="flex-row gap-3">
+          <View className="gap-3 sm:flex-row">
             <View className="flex-1">
               <Controller control={form.control} name="quantity" render={({ field, fieldState }) => <Input keyboardType="numeric" label="Quantidade" onBlur={field.onBlur} onChangeText={field.onChange} value={String(field.value)} error={fieldState.error?.message} />} />
             </View>
@@ -126,7 +125,6 @@ export function ProductsScreen() {
             ))
           )}
         </View>
-      </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }

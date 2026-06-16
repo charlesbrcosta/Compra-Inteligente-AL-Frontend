@@ -34,15 +34,17 @@ function AppNavigator() {
         headerShown: false,
         tabBarActiveTintColor: '#0f766e',
         tabBarInactiveTintColor: '#64748b',
-        tabBarLabelStyle: { fontWeight: '600' },
-        tabBarStyle: { borderTopColor: '#e2e8f0' },
+        tabBarHideOnKeyboard: true,
+        tabBarItemStyle: { paddingVertical: 4 },
+        tabBarLabelStyle: { fontSize: 10, fontWeight: '600' },
+        tabBarStyle: { borderTopColor: '#e2e8f0', minHeight: 56 },
       }}
     >
       <AppTabs.Screen component={HomeScreen} name="Home" options={{ title: 'Inicio' }} />
-      <AppTabs.Screen component={ProductsScreen} name="Products" options={{ title: 'Produtos' }} />
-      <AppTabs.Screen component={RecommendationsScreen} name="Recommendations" options={{ title: 'Recomendacao' }} />
+      <AppTabs.Screen component={ProductsScreen} name="Products" options={{ title: 'Lista' }} />
+      <AppTabs.Screen component={RecommendationsScreen} name="Recommendations" options={{ title: 'Recom.' }} />
       <AppTabs.Screen component={RouteImpactsScreen} name="RouteImpacts" options={{ title: 'Impactos' }} />
-      <AppTabs.Screen component={RecommendationHistoryScreen} name="History" options={{ title: 'Historico' }} />
+      <AppTabs.Screen component={RecommendationHistoryScreen} name="History" options={{ title: 'Hist.' }} />
       <AppTabs.Screen component={ProfileScreen} name="Profile" options={{ title: 'Perfil' }} />
     </AppTabs.Navigator>
   );

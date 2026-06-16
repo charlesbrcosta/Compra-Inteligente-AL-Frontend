@@ -1,8 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Controller, useForm } from 'react-hook-form';
-import { KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
+import { AuthContainer } from '@/shared/components/AuthContainer';
 import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
 import { Header } from '@/shared/components/Header';
@@ -25,46 +26,44 @@ export function LoginScreen({ navigation }: Props) {
   });
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-slate-50" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerClassName="flex-grow justify-center p-5">
-        <Header title="Compra Inteligente AL" subtitle="Compare produtos e deslocamento antes de sair para comprar." />
-        <Card className="gap-4">
-          <Controller
-            control={form.control}
-            name="email"
-            render={({ field, fieldState }) => (
-              <Input
-                autoCapitalize="none"
-                keyboardType="email-address"
-                label="E-mail"
-                onBlur={field.onBlur}
-                onChangeText={field.onChange}
-                value={field.value}
-                error={fieldState.error?.message}
-              />
-            )}
-          />
-          <Controller
-            control={form.control}
-            name="password"
-            render={({ field, fieldState }) => (
-              <Input
-                label="Senha"
-                secureTextEntry
-                onBlur={field.onBlur}
-                onChangeText={field.onChange}
-                value={field.value}
-                error={fieldState.error?.message}
-              />
-            )}
-          />
-          <Button title="Entrar" onPress={onSubmit} isLoading={form.formState.isSubmitting} />
-          <Button title="Criar cadastro" variant="ghost" onPress={() => navigation.navigate('Register')} />
-        </Card>
-        <View className="mt-4">
-          <Text className="text-center text-xs text-muted">Login mockado: qualquer senha com 4+ caracteres funciona.</Text>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+    <AuthContainer>
+      <Header title="Compra Inteligente AL" subtitle="Compare produtos e deslocamento antes de sair para comprar." />
+      <Card className="gap-4">
+        <Controller
+          control={form.control}
+          name="email"
+          render={({ field, fieldState }) => (
+            <Input
+              autoCapitalize="none"
+              keyboardType="email-address"
+              label="E-mail"
+              onBlur={field.onBlur}
+              onChangeText={field.onChange}
+              value={field.value}
+              error={fieldState.error?.message}
+            />
+          )}
+        />
+        <Controller
+          control={form.control}
+          name="password"
+          render={({ field, fieldState }) => (
+            <Input
+              label="Senha"
+              secureTextEntry
+              onBlur={field.onBlur}
+              onChangeText={field.onChange}
+              value={field.value}
+              error={fieldState.error?.message}
+            />
+          )}
+        />
+        <Button title="Entrar" onPress={onSubmit} isLoading={form.formState.isSubmitting} />
+        <Button title="Criar cadastro" variant="ghost" onPress={() => navigation.navigate('Register')} />
+      </Card>
+      <View className="mt-4">
+        <Text className="text-center text-xs text-muted">Login mockado: qualquer senha com 4+ caracteres funciona.</Text>
+      </View>
+    </AuthContainer>
   );
 }
