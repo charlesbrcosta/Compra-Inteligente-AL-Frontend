@@ -101,7 +101,7 @@ export function RecommendationsScreen() {
         </View>
 
         {currentLocation && mapMarket ? (
-          <MockMapPreview currentLocation={currentLocation} market={mapMarket} />
+          <MockMapPreview currentLocation={currentLocation} market={mapMarket} recommendations={visibleRecommendations} />
         ) : (
           <GpsRequiredMapOverlay
             message={locationError ?? 'Ative o GPS para calcular rotas a partir da sua localizacao real.'}

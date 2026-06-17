@@ -3,8 +3,8 @@ import { Text, View } from 'react-native';
 
 import { MapHtmlView } from '@/features/map/presentation/MapHtmlView';
 import { apiRequest } from '@/shared/api/apiClient';
-import { GeoLocation, Market } from '@/shared/types/entities';
-import { formatDistance } from '@/shared/utils/formatters';
+import { GeoLocation, Market, Recommendation } from '@/shared/types/entities';
+import { formatCurrency, formatDistance } from '@/shared/utils/formatters';
 
 interface RoutePoint {
   latitude: number;
@@ -18,7 +18,15 @@ interface RouteResponse {
   source: 'openrouteservice' | 'osrm' | 'local_estimate';
 }
 
-export function MockMapPreview({ currentLocation, market }: { currentLocation: GeoLocation; market?: Market }) {
+export function MockMapPreview({
+  currentLocation,
+  market,
+  recommendations = [],
+}: {
+  currentLocation: GeoLocation;
+  market?: Market;
+  recommendations?: Recommendation[];
+}) {
   const targetMarket = market?.location.latitude !== 0 && market?.location.longitude !== 0 ? market : undefined;
   const [route, setRoute] = useState<RouteResponse | null>(null);
   const [routeError, setRouteError] = useState<string | null>(null);
@@ -60,8 +68,8 @@ export function MockMapPreview({ currentLocation, market }: { currentLocation: G
   }, [currentLocation, targetMarket]);
 
   const html = useMemo(
-    () => buildLeafletHtml(currentLocation, targetMarket, route),
-    [currentLocation, route, targetMarket],
+    () => buildLeafletHtml(currentLocation, targetMarket, route, recommendations),
+    [currentLocation, recommendations, route, targetMarket],
   );
 
   return (
@@ -123,8 +131,27 @@ function getRouteSourceLabel(source?: RouteResponse['source'], routeError?: stri
   return source === 'local_estimate' ? 'Estimativa local' : 'Rota por ruas';
 }
 
-function buildLeafletHtml(currentLocation: GeoLocation, targetMarket?: Market, route?: RouteResponse | null) {
+function buildLeafletHtml(
+  currentLocation: GeoLocation,
+  targetMarket?: Market,
+  route?: RouteResponse | null,
+  recommendations: Recommendation[] = [],
+) {
   const destination = targetMarket?.location ?? currentLocation;
+  const establishmentMarkers = recommendations
+    .filter((recommendation) => hasValidLocation(recommendation.market))
+    .map((recommendation) => ({
+      id: recommendation.market.id,
+      name: recommendation.market.name,
+      address: recommendation.market.address,
+      city: recommendation.market.city,
+      neighborhood: recommendation.market.neighborhood,
+      latitude: recommendation.market.location.latitude,
+      longitude: recommendation.market.location.longitude,
+      totalLabel: formatCurrency(recommendation.finalTotal),
+      productsLabel: formatCurrency(recommendation.productsTotal),
+      isBest: recommendation.market.id === targetMarket?.id,
+    }));
   const routeCoordinates =
     route?.coordinates?.length
       ? route.coordinates.map((point) => [point.latitude, point.longitude])
@@ -134,6 +161,7 @@ function buildLeafletHtml(currentLocation: GeoLocation, targetMarket?: Market, r
     [currentLocation.latitude, currentLocation.longitude],
     [destination.latitude, destination.longitude],
     ...routeCoordinates,
+    ...establishmentMarkers.map((marker) => [marker.latitude, marker.longitude]),
   ];
 
   return `
@@ -153,6 +181,35 @@ function buildLeafletHtml(currentLocation: GeoLocation, targetMarket?: Market, r
         height: 20px;
         width: 20px;
       }
+      .market-marker {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .market-dot {
+        background: #0f766e;
+        border: 3px solid white;
+        border-radius: 999px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
+        height: 20px;
+        width: 20px;
+      }
+      .market-marker.best .market-dot {
+        background: #f59e0b;
+        height: 24px;
+        width: 24px;
+      }
+      .market-price {
+        background: white;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        color: #0f172a;
+        font: 700 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1;
+        padding: 4px 6px;
+        white-space: nowrap;
+      }
     </style>
   </head>
   <body>
@@ -163,6 +220,7 @@ function buildLeafletHtml(currentLocation: GeoLocation, targetMarket?: Market, r
       const destination = ${JSON.stringify([destination.latitude, destination.longitude])};
       const routeCoordinates = ${JSON.stringify(routeCoordinates)};
       const bounds = ${JSON.stringify(bounds)};
+      const establishmentMarkers = ${JSON.stringify(establishmentMarkers)};
 
       const map = L.map('map', { zoomControl: true }).setView(origin, 13);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -170,12 +228,6 @@ function buildLeafletHtml(currentLocation: GeoLocation, targetMarket?: Market, r
         attribution: '&copy; OpenStreetMap'
       }).addTo(map);
 
-      const destinationIcon = L.divIcon({
-        className: '',
-        html: '<div style="height:20px;width:20px;border-radius:999px;background:#0f766e;border:3px solid white;"></div>',
-        iconSize: [20, 20],
-        iconAnchor: [10, 10]
-      });
       const currentLocationIcon = L.divIcon({
         className: '',
         html: '<div class="current-location"></div>',
@@ -184,14 +236,48 @@ function buildLeafletHtml(currentLocation: GeoLocation, targetMarket?: Market, r
       });
 
       L.marker(origin, { icon: currentLocationIcon }).addTo(map).bindPopup('Voce esta aqui');
-      L.marker(destination, { icon: destinationIcon }).addTo(map).bindPopup(${JSON.stringify(targetMarket?.name ?? 'Destino')});
+
+      establishmentMarkers.forEach(function (establishment) {
+        const icon = L.divIcon({
+          className: '',
+          html:
+            '<div class="market-marker ' + (establishment.isBest ? 'best' : '') + '">' +
+              '<div class="market-dot"></div>' +
+              '<div class="market-price">' + establishment.totalLabel + '</div>' +
+            '</div>',
+          iconSize: establishment.isBest ? [96, 48] : [88, 44],
+          iconAnchor: establishment.isBest ? [48, 24] : [44, 22]
+        });
+        const popup =
+          '<strong>' + escapeHtml(establishment.name) + '</strong><br />' +
+          'Total final: ' + escapeHtml(establishment.totalLabel) + '<br />' +
+          'Produtos: ' + escapeHtml(establishment.productsLabel) + '<br />' +
+          escapeHtml(establishment.neighborhood + ', ' + establishment.city);
+
+        L.marker([establishment.latitude, establishment.longitude], { icon: icon })
+          .addTo(map)
+          .bindPopup(popup);
+      });
 
       if (routeCoordinates.length > 0) {
         L.polyline(routeCoordinates, { color: '#0f766e', weight: 5, opacity: 0.9 }).addTo(map);
       }
 
       map.fitBounds(L.latLngBounds(bounds), { padding: [28, 28] });
+
+      function escapeHtml(value) {
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
     </script>
   </body>
 </html>`;
+}
+
+function hasValidLocation(market: Market) {
+  return market.location.latitude !== 0 && market.location.longitude !== 0;
 }
