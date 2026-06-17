@@ -21,6 +21,7 @@ interface RouteResponse {
 export function MockMapPreview({ currentLocation, market }: { currentLocation: GeoLocation; market?: Market }) {
   const targetMarket = market?.location.latitude !== 0 && market?.location.longitude !== 0 ? market : undefined;
   const [route, setRoute] = useState<RouteResponse | null>(null);
+  const [routeError, setRouteError] = useState<string | null>(null);
   const routeConditions = targetMarket?.routeConditions ?? [];
 
   useEffect(() => {
@@ -28,9 +29,11 @@ export function MockMapPreview({ currentLocation, market }: { currentLocation: G
 
     if (!targetMarket) {
       setRoute(null);
+      setRouteError(null);
       return;
     }
 
+    setRouteError(null);
     apiRequest<RouteResponse>('/map/route', {
       method: 'POST',
       authenticated: true,
@@ -46,15 +49,8 @@ export function MockMapPreview({ currentLocation, market }: { currentLocation: G
       })
       .catch(() => {
         if (isMounted) {
-          setRoute({
-            coordinates: [
-              { latitude: currentLocation.latitude, longitude: currentLocation.longitude },
-              { latitude: targetMarket.location.latitude, longitude: targetMarket.location.longitude },
-            ],
-            distanceKm: null,
-            durationMinutes: null,
-            source: 'local_estimate',
-          });
+          setRoute(null);
+          setRouteError('Nao foi possivel carregar uma rota real agora.');
         }
       });
 
@@ -86,13 +82,15 @@ export function MockMapPreview({ currentLocation, market }: { currentLocation: G
         <View className="flex-row flex-wrap justify-between gap-x-3 gap-y-1">
           <Text className="min-w-0 flex-1 text-sm font-semibold text-ink">{targetMarket?.name ?? currentLocation.label}</Text>
           <Text className="text-xs font-semibold text-muted">
-            {getRouteSourceLabel(route?.source)}
+            {getRouteSourceLabel(route?.source, routeError)}
           </Text>
         </View>
 
         {route?.durationMinutes ? (
           <Text className="text-xs text-muted">Tempo estimado sem trafego real: {route.durationMinutes} min</Text>
         ) : null}
+
+        {routeError ? <Text className="text-xs font-semibold text-amber-800">{routeError}</Text> : null}
 
         {routeConditions.length > 0 ? (
           <View className="gap-2">
@@ -113,7 +111,11 @@ export function MockMapPreview({ currentLocation, market }: { currentLocation: G
   );
 }
 
-function getRouteSourceLabel(source?: RouteResponse['source']) {
+function getRouteSourceLabel(source?: RouteResponse['source'], routeError?: string | null) {
+  if (routeError) {
+    return 'Rota indisponivel';
+  }
+
   if (!source) {
     return 'Calculando rota';
   }
@@ -126,10 +128,7 @@ function buildLeafletHtml(currentLocation: GeoLocation, targetMarket?: Market, r
   const routeCoordinates =
     route?.coordinates?.length
       ? route.coordinates.map((point) => [point.latitude, point.longitude])
-      : [
-          [currentLocation.latitude, currentLocation.longitude],
-          [destination.latitude, destination.longitude],
-        ];
+      : [];
 
   const bounds = [
     [currentLocation.latitude, currentLocation.longitude],
@@ -187,7 +186,9 @@ function buildLeafletHtml(currentLocation: GeoLocation, targetMarket?: Market, r
       L.marker(origin, { icon: currentLocationIcon }).addTo(map).bindPopup('Voce esta aqui');
       L.marker(destination, { icon: destinationIcon }).addTo(map).bindPopup(${JSON.stringify(targetMarket?.name ?? 'Destino')});
 
-      L.polyline(routeCoordinates, { color: '#0f766e', weight: 5, opacity: 0.9 }).addTo(map);
+      if (routeCoordinates.length > 0) {
+        L.polyline(routeCoordinates, { color: '#0f766e', weight: 5, opacity: 0.9 }).addTo(map);
+      }
 
       map.fitBounds(L.latLngBounds(bounds), { padding: [28, 28] });
     </script>

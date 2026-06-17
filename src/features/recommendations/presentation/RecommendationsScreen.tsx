@@ -8,6 +8,7 @@ import { useProductStore } from '@/features/products/store/productStore';
 import { useVehicleStore } from '@/features/vehicle/store/vehicleStore';
 import { useRecommendations } from '@/features/recommendations/presentation/useRecommendations';
 import { useUserStore } from '@/features/user/store/userStore';
+import { Button } from '@/shared/components/Button';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { Header } from '@/shared/components/Header';
 import { Loading } from '@/shared/components/Loading';
@@ -21,7 +22,7 @@ export function RecommendationsScreen() {
   const { products, loadProducts } = useProductStore();
   const { user, loadUser } = useUserStore();
   const { loadVehicle } = useVehicleStore();
-  const { recommendations, isLoading, loadRecommendations } = useRecommendations();
+  const { recommendations, isLoading, error, clearRecommendations, loadRecommendations } = useRecommendations();
   const {
     currentLocation,
     loadCurrentLocation,
@@ -46,8 +47,13 @@ export function RecommendationsScreen() {
   );
 
   useEffect(() => {
-    loadRecommendations(currentLocation ?? undefined);
-  }, [currentLocation, loadRecommendations]);
+    if (!currentLocation) {
+      clearRecommendations();
+      return;
+    }
+
+    loadRecommendations(currentLocation);
+  }, [clearRecommendations, currentLocation, loadRecommendations]);
 
   const filteredRecommendations = useMemo(() => {
     if (!user || filter === 'all') {
@@ -94,19 +100,27 @@ export function RecommendationsScreen() {
           <FilterButton isActive={filter === 'neighborhood'} label="Bairro" onPress={() => setFilter('neighborhood')} />
         </View>
 
-        {locationError ? (
-          <View className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-            <Text className="text-sm font-semibold text-amber-900">{locationError}</Text>
-          </View>
-        ) : null}
-
         {currentLocation && mapMarket ? (
           <MockMapPreview currentLocation={currentLocation} market={mapMarket} />
+        ) : (
+          <GpsRequiredMapOverlay
+            message={locationError ?? 'Ative o GPS para calcular rotas a partir da sua localizacao real.'}
+            onEnableGps={() => {
+              loadCurrentLocation();
+              startWatchingLocation();
+            }}
+          />
+        )}
+
+        {error ? (
+          <View className="rounded-lg border border-red-200 bg-red-50 p-3">
+            <Text className="text-sm font-semibold text-red-700">{error}</Text>
+          </View>
         ) : null}
 
         {products.length === 0 ? (
           <EmptyState title="Nenhum produto na lista" description="Adicione produtos para comparar supermercados e atacadistas." />
-        ) : visibleRecommendations.length === 0 ? (
+        ) : !currentLocation ? null : visibleRecommendations.length === 0 ? (
           <EmptyState title="Sem mercados nesse filtro" description="Altere o filtro ou atualize cidade e bairro no perfil." />
         ) : (
           visibleRecommendations.map((recommendation) => (
@@ -115,6 +129,28 @@ export function RecommendationsScreen() {
         )}
       </View>
     </ScreenContainer>
+  );
+}
+
+function GpsRequiredMapOverlay({ message, onEnableGps }: { message: string; onEnableGps: () => void }) {
+  return (
+    <View className="relative overflow-hidden rounded-lg border border-slate-200 bg-slate-200">
+      <View className="h-80 opacity-35">
+        <View className="h-full w-full bg-slate-300">
+          <View className="absolute left-8 top-10 h-20 w-40 rounded-full border-4 border-slate-400" />
+          <View className="absolute right-6 top-20 h-28 w-48 rounded-full border-4 border-slate-400" />
+          <View className="absolute bottom-12 left-10 h-4 w-64 rotate-12 rounded-full bg-slate-400" />
+          <View className="absolute bottom-24 right-8 h-4 w-56 -rotate-12 rounded-full bg-slate-400" />
+        </View>
+      </View>
+      <View className="absolute inset-0 items-center justify-center bg-white/75 p-5">
+        <View className="w-full max-w-sm gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <Text className="text-center text-base font-bold text-amber-950">GPS necessario</Text>
+          <Text className="text-center text-sm text-amber-900">{message}</Text>
+          <Button title="Ativar GPS" onPress={onEnableGps} />
+        </View>
+      </View>
+    </View>
   );
 }
 

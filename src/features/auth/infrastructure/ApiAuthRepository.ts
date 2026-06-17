@@ -28,7 +28,23 @@ export class ApiAuthRepository implements AuthRepository {
 
   async getSession(): Promise<AuthSession | null> {
     const raw = await AsyncStorage.getItem(STORAGE_KEYS.auth);
-    return raw ? JSON.parse(raw) : null;
+
+    if (!raw) {
+      return null;
+    }
+
+    try {
+      const session = JSON.parse(raw) as AuthSession;
+      const validatedSession = await apiRequest<AuthSession>('/auth/session', {
+        authenticated: true,
+      });
+
+      await this.persistSession({ ...validatedSession, token: session.token });
+      return { ...validatedSession, token: session.token };
+    } catch {
+      await AsyncStorage.multiRemove([STORAGE_KEYS.auth, STORAGE_KEYS.user]);
+      return null;
+    }
   }
 
   async logout(): Promise<void> {

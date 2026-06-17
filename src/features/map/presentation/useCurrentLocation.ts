@@ -1,10 +1,7 @@
 import * as Location from 'expo-location';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { ApiMapRepository } from '@/features/map/infrastructure/ApiMapRepository';
 import { GeoLocation } from '@/shared/types/entities';
-
-const repository = new ApiMapRepository();
 
 export const useCurrentLocation = () => {
   const [currentLocation, setCurrentLocation] = useState<GeoLocation | null>(null);
@@ -17,9 +14,8 @@ export const useCurrentLocation = () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== Location.PermissionStatus.GRANTED) {
-        const fallbackLocation = await repository.getCurrentLocation();
-        setCurrentLocation(fallbackLocation);
-        setLocationError('Permissao de localizacao negada. Usando localizacao demonstrativa.');
+        setCurrentLocation(null);
+        setLocationError('Ative o GPS para calcular rotas e recomendacoes pela sua localizacao real.');
         return;
       }
 
@@ -30,9 +26,8 @@ export const useCurrentLocation = () => {
       setCurrentLocation(mapExpoLocation(location));
       setLocationError(null);
     } catch {
-      const fallbackLocation = await repository.getCurrentLocation();
-      setCurrentLocation(fallbackLocation);
-      setLocationError('Nao foi possivel obter GPS agora. Usando localizacao demonstrativa.');
+      setCurrentLocation(null);
+      setLocationError('Nao foi possivel obter sua localizacao real agora. Verifique o GPS do aparelho.');
     }
   }, []);
 
@@ -45,7 +40,8 @@ export const useCurrentLocation = () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== Location.PermissionStatus.GRANTED) {
-        await loadCurrentLocation();
+        setCurrentLocation(null);
+        setLocationError('Ative o GPS para calcular rotas e recomendacoes pela sua localizacao real.');
         return;
       }
 
