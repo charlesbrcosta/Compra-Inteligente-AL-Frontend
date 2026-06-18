@@ -125,7 +125,7 @@ export function RecommendationsScreen() {
             description={
               recommendations.length > 0
                 ? 'Existem mercados na recomendacao, mas o filtro atual nao encontrou estabelecimentos para exibir no mapa.'
-                : 'Sua localizacao foi obtida. O mapa sera exibido quando a SEFAZ retornar mercados reais dentro do raio da recomendacao.'
+                : 'Sua localizacao foi obtida. O mapa sera exibido quando a SEFAZ retornar mercados reais para os produtos da lista.'
             }
           />
         )}
@@ -175,7 +175,7 @@ function RecommendationEmptyState({
   return (
     <EmptyState
       title="Nenhum mercado encontrado"
-      description="A SEFAZ nao retornou estabelecimentos reais dentro do raio atual para os produtos da lista. Tente produtos mais comuns, aumente o raio no backend ou atualize a busca."
+      description="A SEFAZ nao retornou estabelecimentos reais para os produtos da lista. Tente produtos mais comuns ou atualize a busca."
     />
   );
 }
