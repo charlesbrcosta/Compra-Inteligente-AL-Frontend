@@ -7,25 +7,12 @@ import { GeoLocation } from '@/shared/types/entities';
 export const useCurrentLocation = () => {
   const [currentLocation, setCurrentLocation] = useState<GeoLocation | null>(null);
   const [isWatchingLocation, setIsWatchingLocation] = useState(false);
+  const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const subscriptionRef = useRef<Location.LocationSubscription | null>(null);
 
   const ensureLocationAccess = useCallback(async () => {
     try {
-      const hasEnabledServices = await Location.hasServicesEnabledAsync();
-
-      if (!hasEnabledServices && Platform.OS === 'android') {
-        await Location.enableNetworkProviderAsync().catch(() => undefined);
-      }
-
-      const hasEnabledServicesAfterPrompt = await Location.hasServicesEnabledAsync();
-
-      if (!hasEnabledServicesAfterPrompt) {
-        setCurrentLocation(null);
-        setLocationError('O GPS do aparelho esta desligado. Ative a localizacao para calcular mercados proximos.');
-        return false;
-      }
-
       const currentPermission = await Location.getForegroundPermissionsAsync();
       const permission = currentPermission.granted
         ? currentPermission
@@ -44,28 +31,45 @@ export const useCurrentLocation = () => {
       return true;
     } catch {
       setCurrentLocation(null);
-      setLocationError('Nao foi possivel ativar a localizacao agora. Verifique o GPS e as permissoes do aparelho.');
+      setLocationError('Nao foi possivel verificar a permissao de localizacao agora.');
       return false;
     }
   }, []);
 
   const loadCurrentLocation = useCallback(async () => {
     try {
+      setIsLocating(true);
       const hasLocationAccess = await ensureLocationAccess();
 
       if (!hasLocationAccess) {
         return;
       }
 
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
+      if (Platform.OS === 'android') {
+        const hasEnabledServices = await Location.hasServicesEnabledAsync();
+
+        if (!hasEnabledServices) {
+          await Location.enableNetworkProviderAsync().catch(() => undefined);
+        }
+      }
+
+      const location =
+        (await Location.getLastKnownPositionAsync({
+          maxAge: 5 * 60 * 1000,
+          requiredAccuracy: 5000,
+        }).catch(() => null)) ??
+        (await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+          mayShowUserSettingsDialog: true,
+        }));
 
       setCurrentLocation(mapExpoLocation(location));
       setLocationError(null);
     } catch {
       setCurrentLocation(null);
-      setLocationError('Nao foi possivel obter sua localizacao real agora. Verifique o GPS do aparelho.');
+      setLocationError('Nao conseguimos ler sua localizacao agora. Confira se a localizacao esta ativa para o Expo Go.');
+    } finally {
+      setIsLocating(false);
     }
   }, [ensureLocationAccess]);
 
@@ -75,6 +79,7 @@ export const useCurrentLocation = () => {
     }
 
     try {
+      setIsLocating(true);
       const hasLocationAccess = await ensureLocationAccess();
 
       if (!hasLocationAccess) {
@@ -84,9 +89,10 @@ export const useCurrentLocation = () => {
       setIsWatchingLocation(true);
       subscriptionRef.current = await Location.watchPositionAsync(
         {
-          accuracy: Location.Accuracy.High,
-          distanceInterval: 20,
+          accuracy: Location.Accuracy.Balanced,
+          distanceInterval: 10,
           timeInterval: 5000,
+          mayShowUserSettingsDialog: true,
         },
         (location) => {
           setCurrentLocation(mapExpoLocation(location));
@@ -96,8 +102,18 @@ export const useCurrentLocation = () => {
     } catch {
       setIsWatchingLocation(false);
       await loadCurrentLocation();
+    } finally {
+      setIsLocating(false);
     }
   }, [ensureLocationAccess, loadCurrentLocation]);
+
+  const restartLocation = useCallback(async () => {
+    subscriptionRef.current?.remove();
+    subscriptionRef.current = null;
+    setIsWatchingLocation(false);
+    await loadCurrentLocation();
+    await startWatchingLocation();
+  }, [loadCurrentLocation, startWatchingLocation]);
 
   const openLocationSettings = useCallback(async () => {
     await Linking.openSettings().catch(() => undefined);
@@ -113,10 +129,12 @@ export const useCurrentLocation = () => {
 
   return {
     currentLocation,
+    isLocating,
     isWatchingLocation,
     loadCurrentLocation,
     locationError,
     openLocationSettings,
+    restartLocation,
     startWatchingLocation,
     stopWatchingLocation,
   };

@@ -25,9 +25,11 @@ export function RecommendationsScreen() {
   const { recommendations, isLoading, error, clearRecommendations, loadRecommendations } = useRecommendations();
   const {
     currentLocation,
+    isLocating,
     loadCurrentLocation,
     locationError,
     openLocationSettings,
+    restartLocation,
     startWatchingLocation,
     stopWatchingLocation,
   } = useCurrentLocation();
@@ -40,12 +42,6 @@ export function RecommendationsScreen() {
       await loadRecommendations(currentLocation);
     }
   }, [currentLocation, loadCurrentLocation, loadProducts, loadRecommendations, loadUser, loadVehicle]);
-
-  const enableGps = useCallback(async () => {
-    stopWatchingLocation();
-    await loadCurrentLocation();
-    await startWatchingLocation();
-  }, [loadCurrentLocation, startWatchingLocation, stopWatchingLocation]);
 
   useFocusEffect(
     useCallback(() => {
@@ -120,7 +116,8 @@ export function RecommendationsScreen() {
         ) : (
           <GpsRequiredMapOverlay
             message={locationError ?? 'Ative o GPS para calcular rotas a partir da sua localizacao real.'}
-            onEnableGps={enableGps}
+            isLocating={isLocating}
+            onEnableGps={restartLocation}
             onOpenSettings={openLocationSettings}
           />
         )}
@@ -147,10 +144,12 @@ export function RecommendationsScreen() {
 
 function GpsRequiredMapOverlay({
   message,
+  isLocating,
   onEnableGps,
   onOpenSettings,
 }: {
   message: string;
+  isLocating: boolean;
   onEnableGps: () => void;
   onOpenSettings: () => void;
 }) {
@@ -168,7 +167,7 @@ function GpsRequiredMapOverlay({
         <View className="w-full max-w-sm gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
           <Text className="text-center text-base font-bold text-amber-950">GPS necessario</Text>
           <Text className="text-center text-sm text-amber-900">{message}</Text>
-          <Button title="Ativar GPS" onPress={onEnableGps} />
+          <Button title="Ativar GPS" isLoading={isLocating} onPress={onEnableGps} />
           <Button title="Abrir configuracoes" variant="secondary" onPress={onOpenSettings} />
         </View>
       </View>
