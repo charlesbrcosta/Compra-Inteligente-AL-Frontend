@@ -19,17 +19,18 @@ export function HomeScreen() {
   const { recommendations, loadRecommendations } = useRecommendations();
   const best = recommendations[0];
 
+  const reloadScreen = useCallback(async () => {
+    await Promise.all([loadUser(), loadVehicle(), loadProducts(), loadRecommendations()]);
+  }, [loadProducts, loadRecommendations, loadUser, loadVehicle]);
+
   useFocusEffect(
     useCallback(() => {
-      loadUser();
-      loadVehicle();
-      loadProducts();
-      loadRecommendations();
-    }, [loadProducts, loadRecommendations, loadUser, loadVehicle]),
+      reloadScreen();
+    }, [reloadScreen]),
   );
 
   return (
-    <ScreenContainer>
+    <ScreenContainer onRefresh={reloadScreen}>
       <Header title={`Ola, ${user?.name?.split(' ')[0] ?? 'comprador'}`} subtitle="Resumo do seu planejamento de compra em Alagoas." />
 
       <View className="gap-3">

@@ -35,7 +35,7 @@ export function RegisterScreen({ navigation }: Props) {
   });
 
   return (
-    <AuthContainer>
+    <AuthContainer onRefresh={() => form.reset({ name: '', email: '', city: 'Maceio', neighborhood: '', password: '' })}>
       <Header title="Criar cadastro" subtitle="Seus dados ajudam a simular mercados e deslocamentos mais proximos." />
       <Card className="gap-4">
         <Controller control={form.control} name="name" render={({ field, fieldState }) => <Input label="Nome" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />

@@ -33,6 +33,20 @@ export function RecommendationsScreen() {
   } = useCurrentLocation();
   const [filter, setFilter] = useState<MarketFilter>('all');
 
+  const reloadScreen = useCallback(async () => {
+    await Promise.all([loadProducts(), loadUser(), loadVehicle(), loadCurrentLocation()]);
+
+    if (currentLocation) {
+      await loadRecommendations(currentLocation);
+    }
+  }, [currentLocation, loadCurrentLocation, loadProducts, loadRecommendations, loadUser, loadVehicle]);
+
+  const enableGps = useCallback(async () => {
+    stopWatchingLocation();
+    await loadCurrentLocation();
+    await startWatchingLocation();
+  }, [loadCurrentLocation, startWatchingLocation, stopWatchingLocation]);
+
   useFocusEffect(
     useCallback(() => {
       loadProducts();
@@ -88,7 +102,7 @@ export function RecommendationsScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer onRefresh={reloadScreen}>
       <Header
         title="Recomendacao"
         subtitle="Produtos, combustivel, impactos do percurso e filtros por localidade."
@@ -106,10 +120,7 @@ export function RecommendationsScreen() {
         ) : (
           <GpsRequiredMapOverlay
             message={locationError ?? 'Ative o GPS para calcular rotas a partir da sua localizacao real.'}
-            onEnableGps={() => {
-              loadCurrentLocation();
-              startWatchingLocation();
-            }}
+            onEnableGps={enableGps}
             onOpenSettings={openLocationSettings}
           />
         )}

@@ -40,6 +40,10 @@ export function ProductsScreen() {
     }, [loadProducts]),
   );
 
+  const reloadScreen = useCallback(async () => {
+    await loadProducts();
+  }, [loadProducts]);
+
   const submit = form.handleSubmit(async (data) => {
     const product = {
       id: editingProduct?.id ?? createId(),
@@ -125,7 +129,7 @@ export function ProductsScreen() {
   }
 
   return (
-    <ScreenContainer scrollViewRef={scrollViewRef}>
+    <ScreenContainer onRefresh={reloadScreen} scrollViewRef={scrollViewRef}>
         <Header title="Lista de compras" subtitle="Informe quantidade e unidade para comparar os mercados mockados." />
         {error ? (
           <View className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">

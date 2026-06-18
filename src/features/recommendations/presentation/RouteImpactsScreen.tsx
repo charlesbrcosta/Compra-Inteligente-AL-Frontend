@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { Text, View } from 'react-native';
 
 import { useMarkets } from '@/features/markets/presentation/useMarkets';
@@ -7,14 +8,17 @@ import { Loading } from '@/shared/components/Loading';
 import { ScreenContainer } from '@/shared/components/ScreenContainer';
 
 export function RouteImpactsScreen() {
-  const { markets, isLoading } = useMarkets();
+  const { markets, isLoading, loadMarkets } = useMarkets();
+  const reloadScreen = useCallback(async () => {
+    await loadMarkets();
+  }, [loadMarkets]);
 
   if (isLoading) {
     return <Loading label="Carregando impactos" />;
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer onRefresh={reloadScreen}>
         <Header
           title="Impactos"
           subtitle="Condicoes mockadas que alteram o custo de deslocamento antes da recomendacao."

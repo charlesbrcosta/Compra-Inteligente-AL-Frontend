@@ -41,11 +41,14 @@ export function ProfileScreen() {
     },
   });
 
+  const reloadScreen = useCallback(async () => {
+    await Promise.all([loadUser(), loadVehicle()]);
+  }, [loadUser, loadVehicle]);
+
   useFocusEffect(
     useCallback(() => {
-      loadUser();
-      loadVehicle();
-    }, [loadUser, loadVehicle]),
+      reloadScreen();
+    }, [reloadScreen]),
   );
 
   useEffect(() => {
@@ -107,7 +110,7 @@ export function ProfileScreen() {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer onRefresh={reloadScreen}>
       <Header title="Perfil e veiculo" subtitle="Essas informacoes alimentam a simulacao de economia." />
 
       <View className="gap-5">

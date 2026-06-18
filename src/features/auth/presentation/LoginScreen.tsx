@@ -26,7 +26,7 @@ export function LoginScreen({ navigation }: Props) {
   });
 
   return (
-    <AuthContainer>
+    <AuthContainer onRefresh={() => form.reset({ email: 'ana@email.com', password: '1234' })}>
       <Header title="Compra Inteligente AL" subtitle="Compare produtos e deslocamento antes de sair para comprar." />
       <Card className="gap-4">
         <Controller

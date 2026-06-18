@@ -12,10 +12,14 @@ import { formatCurrency } from '@/shared/utils/formatters';
 export function RecommendationHistoryScreen() {
   const { history, isHistoryLoading, loadHistory } = useRecommendations();
 
+  const reloadScreen = useCallback(async () => {
+    await loadHistory();
+  }, [loadHistory]);
+
   useFocusEffect(
     useCallback(() => {
-      loadHistory();
-    }, [loadHistory]),
+      reloadScreen();
+    }, [reloadScreen]),
   );
 
   if (isHistoryLoading) {
@@ -23,7 +27,7 @@ export function RecommendationHistoryScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <ScreenContainer onRefresh={reloadScreen}>
         <Header title="Historico" subtitle="Ultimas recomendacoes calculadas para comparar decisoes anteriores." />
 
         <View className="gap-3">
