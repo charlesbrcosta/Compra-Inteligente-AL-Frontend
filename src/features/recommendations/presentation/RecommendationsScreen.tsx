@@ -27,6 +27,7 @@ export function RecommendationsScreen() {
     currentLocation,
     loadCurrentLocation,
     locationError,
+    openLocationSettings,
     startWatchingLocation,
     stopWatchingLocation,
   } = useCurrentLocation();
@@ -109,6 +110,7 @@ export function RecommendationsScreen() {
               loadCurrentLocation();
               startWatchingLocation();
             }}
+            onOpenSettings={openLocationSettings}
           />
         )}
 
@@ -132,7 +134,15 @@ export function RecommendationsScreen() {
   );
 }
 
-function GpsRequiredMapOverlay({ message, onEnableGps }: { message: string; onEnableGps: () => void }) {
+function GpsRequiredMapOverlay({
+  message,
+  onEnableGps,
+  onOpenSettings,
+}: {
+  message: string;
+  onEnableGps: () => void;
+  onOpenSettings: () => void;
+}) {
   return (
     <View className="relative overflow-hidden rounded-lg border border-slate-200 bg-slate-200">
       <View className="h-80 opacity-35">
@@ -148,6 +158,7 @@ function GpsRequiredMapOverlay({ message, onEnableGps }: { message: string; onEn
           <Text className="text-center text-base font-bold text-amber-950">GPS necessario</Text>
           <Text className="text-center text-sm text-amber-900">{message}</Text>
           <Button title="Ativar GPS" onPress={onEnableGps} />
+          <Button title="Abrir configuracoes" variant="secondary" onPress={onOpenSettings} />
         </View>
       </View>
     </View>
