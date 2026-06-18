@@ -121,7 +121,13 @@ export function RecommendationsScreen() {
         ) : mapMarket ? (
           <MockMapPreview currentLocation={currentLocation} market={mapMarket} recommendations={visibleRecommendations} />
         ) : (
-          <LocationReadyEmptyMap />
+          <LocationReadyEmptyMap
+            description={
+              recommendations.length > 0
+                ? 'Existem mercados na recomendacao, mas o filtro atual nao encontrou estabelecimentos para exibir no mapa.'
+                : 'Sua localizacao foi obtida. O mapa sera exibido quando a SEFAZ retornar mercados reais dentro do raio da recomendacao.'
+            }
+          />
         )}
 
         {error ? (
@@ -133,7 +139,10 @@ export function RecommendationsScreen() {
         {products.length === 0 ? (
           <EmptyState title="Nenhum produto na lista" description="Adicione produtos para comparar supermercados e atacadistas." />
         ) : !currentLocation ? null : visibleRecommendations.length === 0 ? (
-          <EmptyState title="Sem mercados nesse filtro" description="Altere o filtro ou atualize cidade e bairro no perfil." />
+          <RecommendationEmptyState
+            hasRecommendations={recommendations.length > 0}
+            onShowAll={() => setFilter('all')}
+          />
         ) : (
           visibleRecommendations.map((recommendation) => (
             <RecommendationCard key={recommendation.market.id} recommendation={recommendation} />
@@ -144,7 +153,34 @@ export function RecommendationsScreen() {
   );
 }
 
-function LocationReadyEmptyMap() {
+function RecommendationEmptyState({
+  hasRecommendations,
+  onShowAll,
+}: {
+  hasRecommendations: boolean;
+  onShowAll: () => void;
+}) {
+  if (hasRecommendations) {
+    return (
+      <View className="gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <Text className="text-base font-bold text-amber-950">Nenhum mercado nesse filtro</Text>
+        <Text className="text-sm text-amber-900">
+          Existem mercados calculados, mas eles nao combinam com o filtro selecionado. Use Todos para ver a recomendacao completa.
+        </Text>
+        <Button title="Ver todos" variant="secondary" onPress={onShowAll} />
+      </View>
+    );
+  }
+
+  return (
+    <EmptyState
+      title="Nenhum mercado encontrado"
+      description="A SEFAZ nao retornou estabelecimentos reais dentro do raio atual para os produtos da lista. Tente produtos mais comuns, aumente o raio no backend ou atualize a busca."
+    />
+  );
+}
+
+function LocationReadyEmptyMap({ description }: { description: string }) {
   return (
     <View className="relative overflow-hidden rounded-lg border border-slate-200 bg-slate-200">
       <View className="h-80 opacity-35">
@@ -158,9 +194,7 @@ function LocationReadyEmptyMap() {
       <View className="absolute inset-0 items-center justify-center bg-white/75 p-5">
         <View className="w-full max-w-sm gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
           <Text className="text-center text-base font-bold text-emerald-950">GPS ativo</Text>
-          <Text className="text-center text-sm text-emerald-900">
-            Sua localizacao foi obtida. O mapa sera exibido quando houver mercados reais na recomendacao.
-          </Text>
+          <Text className="text-center text-sm text-emerald-900">{description}</Text>
         </View>
       </View>
     </View>
