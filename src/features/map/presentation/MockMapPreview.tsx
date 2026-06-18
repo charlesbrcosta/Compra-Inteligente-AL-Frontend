@@ -185,30 +185,58 @@ function buildLeafletHtml(
         align-items: center;
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 6px;
       }
-      .market-dot {
+      .market-pin {
+        align-items: center;
         background: #0f766e;
         border: 3px solid white;
-        border-radius: 999px;
+        border-radius: 999px 999px 999px 2px;
         box-shadow: 0 2px 8px rgba(15, 23, 42, 0.25);
-        height: 20px;
-        width: 20px;
+        display: flex;
+        height: 28px;
+        justify-content: center;
+        transform: rotate(-45deg);
+        width: 28px;
       }
-      .market-marker.best .market-dot {
+      .market-pin span {
+        background: white;
+        border-radius: 999px;
+        display: block;
+        height: 8px;
+        width: 8px;
+      }
+      .market-marker.best .market-pin {
         background: #f59e0b;
-        height: 24px;
-        width: 24px;
+        height: 32px;
+        width: 32px;
       }
-      .market-price {
+      .market-name {
         background: white;
         border: 1px solid #cbd5e1;
         border-radius: 6px;
         color: #0f172a;
         font: 700 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        line-height: 1;
-        padding: 4px 6px;
+        line-height: 1.15;
+        max-width: 132px;
+        overflow: hidden;
+        padding: 5px 7px;
+        text-align: center;
+        text-overflow: ellipsis;
         white-space: nowrap;
+      }
+      .market-marker.best .market-name {
+        border-color: #f59e0b;
+        color: #92400e;
+      }
+      .popup-badge {
+        background: #fef3c7;
+        border-radius: 999px;
+        color: #92400e;
+        display: inline-block;
+        font: 700 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        margin-bottom: 6px;
+        padding: 3px 8px;
       }
     </style>
   </head>
@@ -242,13 +270,14 @@ function buildLeafletHtml(
           className: '',
           html:
             '<div class="market-marker ' + (establishment.isBest ? 'best' : '') + '">' +
-              '<div class="market-dot"></div>' +
-              '<div class="market-price">' + establishment.totalLabel + '</div>' +
+              '<div class="market-pin"><span></span></div>' +
+              '<div class="market-name">' + escapeHtml(establishment.name) + '</div>' +
             '</div>',
-          iconSize: establishment.isBest ? [96, 48] : [88, 44],
-          iconAnchor: establishment.isBest ? [48, 24] : [44, 22]
+          iconSize: establishment.isBest ? [148, 64] : [140, 60],
+          iconAnchor: establishment.isBest ? [74, 36] : [70, 34]
         });
         const popup =
+          (establishment.isBest ? '<div class="popup-badge">Melhor recomendacao</div><br />' : '') +
           '<strong>' + escapeHtml(establishment.name) + '</strong><br />' +
           'Total final: ' + escapeHtml(establishment.totalLabel) + '<br />' +
           'Produtos: ' + escapeHtml(establishment.productsLabel) + '<br />' +
