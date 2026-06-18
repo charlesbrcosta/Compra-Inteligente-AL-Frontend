@@ -185,7 +185,6 @@ function buildLeafletHtml(
         align-items: center;
         display: flex;
         flex-direction: column;
-        gap: 6px;
       }
       .market-pin {
         align-items: center;
@@ -210,24 +209,6 @@ function buildLeafletHtml(
         background: #f59e0b;
         height: 32px;
         width: 32px;
-      }
-      .market-name {
-        background: white;
-        border: 1px solid #cbd5e1;
-        border-radius: 6px;
-        color: #0f172a;
-        font: 700 11px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        line-height: 1.15;
-        max-width: 132px;
-        overflow: hidden;
-        padding: 5px 7px;
-        text-align: center;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .market-marker.best .market-name {
-        border-color: #f59e0b;
-        color: #92400e;
       }
       .popup-badge {
         background: #fef3c7;
@@ -271,10 +252,9 @@ function buildLeafletHtml(
           html:
             '<div class="market-marker ' + (establishment.isBest ? 'best' : '') + '">' +
               '<div class="market-pin"><span></span></div>' +
-              '<div class="market-name">' + escapeHtml(establishment.name) + '</div>' +
             '</div>',
-          iconSize: establishment.isBest ? [148, 64] : [140, 60],
-          iconAnchor: establishment.isBest ? [74, 36] : [70, 34]
+          iconSize: establishment.isBest ? [32, 32] : [28, 28],
+          iconAnchor: establishment.isBest ? [16, 30] : [14, 26]
         });
         const popup =
           (establishment.isBest ? '<div class="popup-badge">Melhor recomendacao</div><br />' : '') +
