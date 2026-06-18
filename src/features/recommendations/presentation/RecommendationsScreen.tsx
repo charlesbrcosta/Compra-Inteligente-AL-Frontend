@@ -111,15 +111,17 @@ export function RecommendationsScreen() {
           <FilterButton isActive={filter === 'neighborhood'} label="Bairro" onPress={() => setFilter('neighborhood')} />
         </View>
 
-        {currentLocation && mapMarket ? (
-          <MockMapPreview currentLocation={currentLocation} market={mapMarket} recommendations={visibleRecommendations} />
-        ) : (
+        {!currentLocation ? (
           <GpsRequiredMapOverlay
             message={locationError ?? 'Ative o GPS para calcular rotas a partir da sua localizacao real.'}
             isLocating={isLocating}
             onEnableGps={restartLocation}
             onOpenSettings={openLocationSettings}
           />
+        ) : mapMarket ? (
+          <MockMapPreview currentLocation={currentLocation} market={mapMarket} recommendations={visibleRecommendations} />
+        ) : (
+          <LocationReadyEmptyMap />
         )}
 
         {error ? (
@@ -139,6 +141,29 @@ export function RecommendationsScreen() {
         )}
       </View>
     </ScreenContainer>
+  );
+}
+
+function LocationReadyEmptyMap() {
+  return (
+    <View className="relative overflow-hidden rounded-lg border border-slate-200 bg-slate-200">
+      <View className="h-80 opacity-35">
+        <View className="h-full w-full bg-slate-300">
+          <View className="absolute left-8 top-10 h-20 w-40 rounded-full border-4 border-slate-400" />
+          <View className="absolute right-6 top-20 h-28 w-48 rounded-full border-4 border-slate-400" />
+          <View className="absolute bottom-12 left-10 h-4 w-64 rotate-12 rounded-full bg-slate-400" />
+          <View className="absolute bottom-24 right-8 h-4 w-56 -rotate-12 rounded-full bg-slate-400" />
+        </View>
+      </View>
+      <View className="absolute inset-0 items-center justify-center bg-white/75 p-5">
+        <View className="w-full max-w-sm gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+          <Text className="text-center text-base font-bold text-emerald-950">GPS ativo</Text>
+          <Text className="text-center text-sm text-emerald-900">
+            Sua localizacao foi obtida. O mapa sera exibido quando houver mercados reais na recomendacao.
+          </Text>
+        </View>
+      </View>
+    </View>
   );
 }
 
