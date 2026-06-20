@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { Recommendation } from '@/shared/types/entities';
 import { formatCurrency, formatDistance } from '@/shared/utils/formatters';
@@ -40,7 +40,7 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
             hitSlop={8}
             onPress={(event) => {
               event.stopPropagation();
-              setIsProductListVisible((current) => !current);
+              setIsProductListVisible(true);
             }}
           >
             <ListIcon isActive={isProductListVisible} />
@@ -57,26 +57,11 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
         {!recommendation.isBest ? <Row label="Diferenca para o melhor" value={formatCurrency(recommendation.estimatedSavings)} /> : null}
       </View> : null}
 
-      {isProductListVisible ? (
-        <View className="mt-4 rounded-2xl border border-line bg-sand p-4">
-          <Text className="text-sm font-extrabold text-ink">Produtos encontrados neste mercado</Text>
-          <View className="mt-3 gap-2">
-            {recommendation.market.products.length > 0 ? (
-              recommendation.market.products.map((product) => (
-                <View key={`${recommendation.market.id}-${product.productName}`} className="flex-row justify-between gap-3">
-                  <View className="min-w-0 flex-1">
-                    <Text className="text-sm font-bold text-ink">{product.productName}</Text>
-                    <Text className="text-xs text-muted">{product.unit}</Text>
-                  </View>
-                  <Text className="text-sm font-extrabold text-success">{formatCurrency(product.price)}</Text>
-                </View>
-              ))
-            ) : (
-              <Text className="text-sm text-muted">Nenhum produto da lista foi encontrado neste mercado.</Text>
-            )}
-          </View>
-        </View>
-      ) : null}
+      <MarketProductsModal
+        recommendation={recommendation}
+        visible={isProductListVisible}
+        onClose={() => setIsProductListVisible(false)}
+      />
 
       {hasMissingProducts ? (
         <View className="mt-3 rounded-xl bg-amber-50 p-3">
@@ -87,6 +72,66 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
         </View>
       ) : null}
     </Pressable>
+  );
+}
+
+function MarketProductsModal({
+  recommendation,
+  visible,
+  onClose,
+}: {
+  recommendation: Recommendation;
+  visible: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
+      <View className="flex-1 justify-end bg-black/45">
+        <View className="max-h-[82%] rounded-t-3xl bg-sand p-5">
+          <View className="flex-row items-start justify-between gap-4">
+            <View className="min-w-0 flex-1">
+              <Text className="text-xl font-extrabold text-ink">Produtos encontrados</Text>
+              <Text className="mt-1 text-sm font-semibold text-muted">{recommendation.market.name}</Text>
+            </View>
+            <Pressable
+              accessibilityLabel="Fechar lista de produtos"
+              className="h-11 w-11 items-center justify-center rounded-xl border border-line bg-white active:opacity-80"
+              onPress={onClose}
+            >
+              <Text className="text-lg font-extrabold text-ink">X</Text>
+            </Pressable>
+          </View>
+
+          <View className="mt-4 rounded-2xl border border-line bg-white p-4">
+            <Row label="Total dos produtos" value={formatCurrency(recommendation.productsTotal)} isStrong />
+            <View className="mt-3 h-px bg-line" />
+            <Row label="Total final" value={formatCurrency(recommendation.finalTotal)} isStrong />
+          </View>
+
+          <ScrollView className="mt-4" contentContainerClassName="gap-3 pb-6">
+            {recommendation.market.products.length > 0 ? (
+              recommendation.market.products.map((product) => (
+                <View key={`${recommendation.market.id}-${product.productName}`} className="rounded-2xl border border-line bg-white p-4">
+                  <View className="flex-row items-start justify-between gap-3">
+                    <View className="min-w-0 flex-1">
+                      <Text className="text-base font-extrabold text-ink">{product.productName}</Text>
+                      <Text className="mt-1 text-xs font-semibold uppercase text-muted">{product.unit}</Text>
+                    </View>
+                    <Text className="text-lg font-extrabold text-success">{formatCurrency(product.price)}</Text>
+                  </View>
+                </View>
+              ))
+            ) : (
+              <View className="rounded-2xl border border-line bg-white p-4">
+                <Text className="text-center text-sm font-semibold text-muted">
+                  Nenhum produto da lista foi encontrado neste mercado.
+                </Text>
+              </View>
+            )}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
