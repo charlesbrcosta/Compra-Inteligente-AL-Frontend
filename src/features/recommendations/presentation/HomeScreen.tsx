@@ -37,20 +37,20 @@ export function HomeScreen() {
       <Header title={`Ola, ${user?.name?.split(' ')[0] ?? 'comprador'}`} subtitle="Resumo do seu planejamento de compra em Alagoas." />
 
       <View className="gap-4">
-        <View className="overflow-hidden rounded-3xl border border-yellow-200 bg-yellow-200 p-6">
-          <Text className="self-start rounded-full bg-white/80 px-3 py-1 text-xs font-extrabold uppercase text-ink">
+        <View className="overflow-hidden rounded-3xl bg-primary p-6">
+          <Text className="self-start rounded-full bg-yellow-200 px-3 py-1 text-xs font-extrabold uppercase text-ink">
             Recomendacao de hoje
           </Text>
-          <Text className="mt-4 text-2xl font-extrabold leading-8 text-ink">
+          <Text className="mt-4 text-2xl font-extrabold leading-8 text-white">
             {best ? `${best.market.name} sai por ${formatCurrency(best.finalTotal)}` : 'Monte sua lista para comparar'}
           </Text>
-          <Text className="mt-2 max-w-xl text-sm font-semibold leading-5 text-muted">
+          <Text className="mt-2 max-w-xl text-sm leading-5 text-white/85">
             {best
               ? `Economia estimada considerando produtos, combustivel e ida e volta.`
               : 'Adicione produtos e cadastre seu veiculo para descobrir o menor custo total.'}
           </Text>
-          <Pressable className="mt-5 self-start rounded-xl bg-ink px-4 py-2 active:opacity-80" onPress={() => navigate('Recommendations')}>
-            <Text className="text-sm font-extrabold text-white">Ver comparacao completa</Text>
+          <Pressable className="mt-5 self-start rounded-xl bg-white px-4 py-2 active:opacity-80" onPress={() => navigate('Recommendations')}>
+            <Text className="text-sm font-extrabold text-primary">Ver comparacao completa</Text>
           </Pressable>
         </View>
 
