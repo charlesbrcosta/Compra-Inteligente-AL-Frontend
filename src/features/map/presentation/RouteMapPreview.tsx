@@ -131,7 +131,7 @@ export function RouteMapPreview({
           </View>
         ) : (
           <Text className="text-sm text-amber-800">
-            Dados de congestionamento, acidentes e bloqueios em tempo real ainda nao estao integrados.
+            Nenhum impacto de clima ou percurso foi detectado para esta rota agora.
           </Text>
         )}
       </View>
