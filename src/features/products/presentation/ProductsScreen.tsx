@@ -33,7 +33,7 @@ export function ProductsScreen() {
   const [isSefazModalVisible, setIsSefazModalVisible] = useState(false);
   const [isScannerVisible, setIsScannerVisible] = useState(false);
   const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
-  const [barcodeProduct, setBarcodeProduct] = useState<SefazProductPrice | null>(null);
+  const [barcodeProducts, setBarcodeProducts] = useState<SefazProductPrice[]>([]);
   const [barcodeError, setBarcodeError] = useState<string | null>(null);
   const [isBarcodeLoading, setIsBarcodeLoading] = useState(false);
   const [isSefazLoading, setIsSefazLoading] = useState(false);
@@ -160,8 +160,9 @@ export function ProductsScreen() {
     }
   };
 
-  const addSefazProductToList = async (sefazProduct: SefazProductPrice) => {
-    const productKey = getSefazProductKey(sefazProduct);
+  const addSefazProductToList = async (sefazProduct: SefazProductPrice, barcode?: string | null) => {
+    const normalizedBarcode = barcode?.trim();
+    const productKey = normalizedBarcode ? `barcode-${normalizedBarcode}` : getSefazProductKey(sefazProduct);
 
     if (pendingSefazProductKeys.includes(productKey) || isSaving) {
       return;
@@ -169,7 +170,15 @@ export function ProductsScreen() {
 
     const name = normalizeSefazProductName(sefazProduct);
     const unit = normalizeSefazUnit(sefazProduct.unit);
+    const alreadyHasBarcode = normalizedBarcode
+      ? products.some((product) => product.barcode === normalizedBarcode)
+      : false;
     const alreadyExists = products.some((product) => normalizeText(product.name) === normalizeText(name));
+
+    if (alreadyHasBarcode) {
+      Alert.alert('Produto ja cadastrado', 'Este codigo de barras ja esta cadastrado na sua lista.');
+      return;
+    }
 
     if (alreadyExists) {
       Alert.alert('Produto ja cadastrado', `${name} ja esta na sua lista de compras.`);
@@ -183,6 +192,7 @@ export function ProductsScreen() {
         name,
         quantity: 1,
         unit,
+        barcode: normalizedBarcode || undefined,
       });
       setDismissedSefazProducts((current) => [...current, productKey]);
       Alert.alert('Produto adicionado', `${name} foi adicionado a sua lista.`);
@@ -199,7 +209,7 @@ export function ProductsScreen() {
 
   const openScanner = async () => {
     setBarcodeError(null);
-    setBarcodeProduct(null);
+    setBarcodeProducts([]);
     setScannedBarcode(null);
 
     if (!cameraPermission?.granted) {
@@ -227,16 +237,21 @@ export function ProductsScreen() {
   const lookupBarcode = async (code: string) => {
     try {
       setBarcodeError(null);
-      setBarcodeProduct(null);
+      setBarcodeProducts([]);
       setIsBarcodeLoading(true);
       const data = await sefazRepository.searchProductByBarcode(code);
 
-      if (!data.product) {
+      if (products.some((product) => product.barcode === code)) {
+        setBarcodeError('Este codigo de barras ja esta cadastrado na sua lista.');
+        return;
+      }
+
+      if (data.products.length === 0) {
         setBarcodeError('A SEFAZ nao retornou produto com preco real valido para este codigo.');
         return;
       }
 
-      setBarcodeProduct(data.product);
+      setBarcodeProducts(data.products);
     } catch {
       setBarcodeError('Nao foi possivel consultar este codigo de barras na SEFAZ agora.');
     } finally {
@@ -247,7 +262,7 @@ export function ProductsScreen() {
   const closeScanner = () => {
     setIsScannerVisible(false);
     setScannedBarcode(null);
-    setBarcodeProduct(null);
+    setBarcodeProducts([]);
     setBarcodeError(null);
     setIsBarcodeLoading(false);
   };
@@ -395,11 +410,12 @@ export function ProductsScreen() {
           error={barcodeError}
           isLoading={isBarcodeLoading}
           permissionGranted={Boolean(cameraPermission?.granted)}
-          product={barcodeProduct}
+          products={barcodeProducts}
           visible={isScannerVisible}
-          isAddingProduct={barcodeProduct ? pendingSefazProductKeys.includes(getSefazProductKey(barcodeProduct)) || isSaving : false}
+          pendingProductKeys={pendingSefazProductKeys}
+          isSaving={isSaving}
           onAdd={async (product) => {
-            await addSefazProductToList(product);
+            await addSefazProductToList(product, scannedBarcode);
             closeScanner();
           }}
           onClose={closeScanner}
@@ -407,7 +423,7 @@ export function ProductsScreen() {
           onScan={handleBarcodeScanned}
           onScanAgain={() => {
             setScannedBarcode(null);
-            setBarcodeProduct(null);
+            setBarcodeProducts([]);
             setBarcodeError(null);
           }}
         />
@@ -478,10 +494,11 @@ function SefazResultsModal({
 function BarcodeScannerModal({
   barcode,
   error,
-  isAddingProduct,
   isLoading,
+  isSaving,
+  pendingProductKeys,
   permissionGranted,
-  product,
+  products,
   visible,
   onAdd,
   onClose,
@@ -491,10 +508,11 @@ function BarcodeScannerModal({
 }: {
   barcode: string | null;
   error: string | null;
-  isAddingProduct: boolean;
   isLoading: boolean;
+  isSaving: boolean;
+  pendingProductKeys: string[];
   permissionGranted: boolean;
-  product: SefazProductPrice | null;
+  products: SefazProductPrice[];
   visible: boolean;
   onAdd: (product: SefazProductPrice) => void;
   onClose: () => void;
@@ -601,19 +619,42 @@ function BarcodeScannerModal({
           </View>
         ) : null}
 
-        {barcode || isLoading || error || product ? (
+        {barcode || isLoading || error || products.length > 0 ? (
           <View className="absolute bottom-0 left-0 right-0 z-20 rounded-t-3xl bg-white p-6" style={styles.scanPanel}>
             {barcode ? <Text className="text-center text-xs font-bold uppercase tracking-wide text-muted">Codigo lido: {barcode}</Text> : null}
             {isLoading ? <Text className="mt-2 text-center text-base font-extrabold text-ink">Consultando SEFAZ...</Text> : null}
             {error ? <Text className="mt-2 text-center text-sm font-bold text-red-700">{error}</Text> : null}
-            {product ? (
+            {products.length > 0 ? (
               <>
-                <Text className="mt-2 text-center text-lg font-extrabold text-ink">{normalizeSefazProductName(product)}</Text>
-                <Text className="mt-1 text-center text-sm text-muted">{product.marketName}</Text>
-                <Text className="mt-2 text-center text-2xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
-                <View className="mt-4">
-                  <Button isLoading={isAddingProduct} title="Adicionar a lista" variant="success" onPress={() => onAdd(product)} />
-                </View>
+                <Text className="mt-2 text-center text-base font-extrabold text-ink">Escolha o produto para cadastrar</Text>
+                <ScrollView className="mt-3 max-h-72" contentContainerClassName="gap-3 pb-2">
+                  {products.slice(0, 12).map((product) => {
+                    const isAddingProduct =
+                      isSaving || pendingProductKeys.includes(barcode ? `barcode-${barcode}` : getSefazProductKey(product));
+
+                    return (
+                      <View key={getSefazProductKey(product)} className="rounded-2xl border border-line bg-sand p-4">
+                        <Text className="text-sm font-extrabold text-ink">{normalizeSefazProductName(product)}</Text>
+                        <Text className="mt-1 text-xs font-semibold text-muted">{product.marketName}</Text>
+                        <Text className="mt-1 text-xs text-muted">
+                          {product.neighborhood}, {product.city}
+                        </Text>
+                        <View className="mt-3 flex-row items-center justify-between gap-3">
+                          <Text className="text-xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
+                          <Pressable
+                            className="min-h-11 items-center justify-center rounded-xl bg-success px-4 active:opacity-80"
+                            disabled={isAddingProduct}
+                            onPress={() => onAdd(product)}
+                          >
+                            <Text className="text-sm font-extrabold text-white">
+                              {isAddingProduct ? 'Adicionando...' : 'Adicionar'}
+                            </Text>
+                          </Pressable>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </ScrollView>
               </>
             ) : null}
             <View className="mt-2">

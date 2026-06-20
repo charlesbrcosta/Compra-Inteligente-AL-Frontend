@@ -26,6 +26,7 @@ export interface ShoppingProduct {
   name: string;
   quantity: number;
   unit: UnitType;
+  barcode?: string;
 }
 
 export interface GeoLocation {
