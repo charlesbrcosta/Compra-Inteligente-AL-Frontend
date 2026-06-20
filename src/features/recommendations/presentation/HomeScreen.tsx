@@ -38,7 +38,7 @@ export function HomeScreen() {
 
       <View className="gap-4">
         <View className="overflow-hidden rounded-3xl bg-primary p-6">
-          <Text className="self-start rounded-full bg-[#C97A12] px-3 py-1 text-xs font-extrabold uppercase text-white">
+          <Text className="self-start rounded-full bg-accent px-3 py-1 text-xs font-extrabold uppercase text-ink">
             Recomendacao de hoje
           </Text>
           <Text className="mt-4 text-2xl font-extrabold leading-8 text-white">

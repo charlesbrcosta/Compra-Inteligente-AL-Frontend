@@ -1,9 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useFocusEffect } from '@react-navigation/native';
 import { BarcodeScanningResult, CameraView, useCameraPermissions } from 'expo-camera';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Animated, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
@@ -403,6 +403,42 @@ function BarcodeScannerModal({
   onScan: (result: BarcodeScanningResult) => void;
   onScanAgain: () => void;
 }) {
+  const scanLinePosition = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!visible || barcode) {
+      scanLinePosition.stopAnimation();
+      scanLinePosition.setValue(0);
+      return;
+    }
+
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(scanLinePosition, {
+          toValue: 1,
+          duration: 1400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scanLinePosition, {
+          toValue: 0,
+          duration: 1400,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+
+    animation.start();
+
+    return () => {
+      animation.stop();
+    };
+  }, [barcode, scanLinePosition, visible]);
+
+  const scanLineTranslateY = scanLinePosition.interpolate({
+    inputRange: [0, 1],
+    outputRange: [8, 164],
+  });
+
   return (
     <Modal animationType="slide" presentationStyle="fullScreen" statusBarTranslucent visible={visible} onRequestClose={onClose}>
       <View className="flex-1 bg-[#0B0F0E]">
@@ -437,7 +473,15 @@ function BarcodeScannerModal({
               <ScanCorner className="right-0 top-0 rounded-tr-xl border-b-0 border-l-0" />
               <ScanCorner className="bottom-0 left-0 rounded-bl-xl border-r-0 border-t-0" />
               <ScanCorner className="bottom-0 right-0 rounded-br-xl border-l-0 border-t-0" />
-              <View className="absolute left-2 right-2 top-1/2 h-0.5 rounded-full bg-success" />
+              <Animated.View
+                className="absolute left-2 right-2 h-0.5 rounded-full bg-success"
+                style={[
+                  styles.scanLine,
+                  {
+                    transform: [{ translateY: scanLineTranslateY }],
+                  },
+                ]}
+              />
             </View>
 
             <Text className="mt-8 max-w-64 text-center text-sm font-semibold leading-5 text-white/85">
@@ -603,5 +647,10 @@ const styles = StyleSheet.create({
   },
   scanPanel: {
     elevation: 20,
+  },
+  scanLine: {
+    shadowColor: '#2F8F5B',
+    shadowOpacity: 0.9,
+    shadowRadius: 8,
   },
 });
