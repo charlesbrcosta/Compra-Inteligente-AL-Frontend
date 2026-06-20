@@ -37,6 +37,7 @@ export function RecommendationsScreen() {
     stopWatchingLocation,
   } = useCurrentLocation();
   const [filter, setFilter] = useState<MarketFilter>('all');
+  const [selectedMarketId, setSelectedMarketId] = useState<string | null>(null);
   const lastRecommendationLocationRef = useRef(currentLocation);
 
   const reloadScreen = useCallback(async () => {
@@ -100,9 +101,22 @@ export function RecommendationsScreen() {
     [filteredRecommendations],
   );
 
+  useEffect(() => {
+    if (!selectedMarketId || visibleRecommendations.some((recommendation) => recommendation.market.id === selectedMarketId)) {
+      return;
+    }
+
+    setSelectedMarketId(null);
+  }, [selectedMarketId, visibleRecommendations]);
+
+  const selectedRecommendation = useMemo(
+    () => visibleRecommendations.find((recommendation) => recommendation.market.id === selectedMarketId),
+    [selectedMarketId, visibleRecommendations],
+  );
+
   const mapMarket = useMemo(
-    () => visibleRecommendations.find((recommendation) => recommendation.isBest)?.market ?? visibleRecommendations[0]?.market,
-    [visibleRecommendations],
+    () => selectedRecommendation?.market ?? visibleRecommendations.find((recommendation) => recommendation.isBest)?.market ?? visibleRecommendations[0]?.market,
+    [selectedRecommendation, visibleRecommendations],
   );
 
   if (isLoading) {
@@ -165,7 +179,12 @@ export function RecommendationsScreen() {
           <>
             <CostGauge recommendations={visibleRecommendations} />
             {visibleRecommendations.map((recommendation) => (
-              <RecommendationCard key={recommendation.market.id} recommendation={recommendation} />
+              <RecommendationCard
+                key={recommendation.market.id}
+                isSelected={recommendation.market.id === mapMarket?.id}
+                recommendation={recommendation}
+                onSelectRecommendation={() => setSelectedMarketId(recommendation.market.id)}
+              />
             ))}
           </>
         )}

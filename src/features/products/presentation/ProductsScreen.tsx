@@ -463,8 +463,8 @@ function SefazResultsModal({
               <Text className="text-2xl font-extrabold text-ink">Produtos encontrados</Text>
               <Text className="mt-1 text-sm text-muted">Toque em V para adicionar ou na lixeira para remover da selecao.</Text>
             </View>
-            <Pressable className="h-11 w-11 items-center justify-center rounded-xl border border-line bg-white" onPress={onClose}>
-              <Text className="text-lg font-extrabold text-ink">X</Text>
+            <Pressable className="h-11 w-11 items-center justify-center rounded-xl bg-primary active:opacity-80" onPress={onClose}>
+              <Text className="text-lg font-extrabold text-white">X</Text>
             </Pressable>
           </View>
 
