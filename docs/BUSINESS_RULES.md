@@ -2,7 +2,7 @@
 
 ## Custo de deslocamento por km rodado
 
-O deslocamento considera a distância de ida entre a posição atual do usuário e o mercado. No app mobile, essa posição vem do GPS do dispositivo em tempo real. Se a permissão de localização for negada ou o app estiver rodando em um ambiente sem GPS, o sistema usa uma posição demonstrativa como fallback.
+O deslocamento considera a distância de ida entre a posição atual do usuário e o mercado. No app mobile, essa posição vem do GPS do dispositivo em tempo real. Se a permissão de localização for negada ou o app estiver rodando em um ambiente sem GPS, o usuário precisa ativar o GPS para calcular distância real.
 
 Depois de calcular a distância de ida, o deslocamento considera ida e volta:
 
@@ -13,7 +13,7 @@ custoDeslocamentoBase = (kmRodadoTotal / consumoKmPorLitro) * precoCombustivel
 
 ## Impactos do percurso
 
-O sistema tambem considera variaveis mockadas que podem afetar o trajeto:
+O sistema foi preparado para considerar variaveis externas que podem afetar o trajeto:
 
 - acidente na pista;
 - chuva;
@@ -21,7 +21,7 @@ O sistema tambem considera variaveis mockadas que podem afetar o trajeto:
 - transito intenso;
 - obra na via.
 
-Cada condicao possui um percentual de impacto. Esses percentuais aumentam o custo estimado de deslocamento, simulando maior consumo por lentidao, desvios, paradas e reducao de velocidade.
+Essas condicoes ainda dependem de uma API real de transito/incidentes. Enquanto essa API nao estiver configurada, acidentes, chuva, bloqueios e congestionamentos nao entram no calculo para evitar dados inventados.
 
 ```ts
 percentualImpactoPercurso = somaDosPercentuaisDasCondicoes
@@ -29,7 +29,7 @@ custoImpactoPercurso = custoDeslocamentoBase * percentualImpactoPercurso
 custoDeslocamentoAjustado = custoDeslocamentoBase + custoImpactoPercurso
 ```
 
-Para evitar valores irreais, o impacto total e limitado a 60%.
+Quando a integracao real existir, o impacto total deve ser limitado a 60% para evitar valores irreais.
 
 ## Total final
 
@@ -43,15 +43,13 @@ O melhor mercado é aquele com o menor `totalFinal`.
 
 ## Origem dos dados e calculo da rota
 
-Os dados do estabelecimento, como nome, endereco e coordenadas, podem vir da SEFAZ quando a integracao real estiver sendo usada.
+Os dados do estabelecimento, como nome, endereco e coordenadas, vem da SEFAZ.
 
 O OpenRouteService nao e a origem dos estabelecimentos. Ele e usado apenas para calcular a rota/distancia entre a posicao do usuario e as coordenadas do estabelecimento.
 
 Quando o backend consegue consultar o OpenRouteService, a recomendacao marca o calculo da rota como `openrouteservice`.
 
-Quando a API externa nao esta disponivel, a recomendacao usa `local_estimate`, que calcula a distancia por coordenadas com fator de rota.
-
-No mapa, o app exibe OpenStreetMap com Leaflet. A geometria da rota vem do backend: primeiro OpenRouteService, depois OSRM publico como fallback gratuito para evitar rota em linha reta.
+No mapa, o app exibe OpenStreetMap com Leaflet. A geometria da rota vem do backend: primeiro OpenRouteService, depois OSRM publico como alternativa gratuita para evitar rota em linha reta.
 
 ## Historico
 
@@ -76,4 +74,4 @@ economiaEstimada = totalFinalDoMercado - totalFinalDoMelhorMercado
 
 ## Produtos indisponíveis
 
-Quando um produto da lista não existe no mercado mockado, ele é listado como indisponível e não entra na soma daquele mercado.
+Quando um produto da lista não aparece para um estabelecimento no retorno da SEFAZ, ele é listado como indisponível e não entra na soma daquele mercado.

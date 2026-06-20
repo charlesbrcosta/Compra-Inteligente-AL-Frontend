@@ -2,14 +2,13 @@
 
 ## SEFAZ
 
-Uma integração real com dados fiscais pode ser adicionada criando repositories HTTP que implementem os contratos existentes ou novos contratos fiscais.
+A integração com SEFAZ ja e usada para produtos, precos e estabelecimentos. Evolucoes futuras podem melhorar normalizacao e confiabilidade dos dados.
 
 Sugestão:
 
-- Criar `SefazProductPriceRepository`.
 - Normalizar nomes de produtos vindos de documentos fiscais.
 - Associar EAN/GTIN aos itens para reduzir ambiguidade.
-- Manter fallback para preços mockados em ambiente de desenvolvimento.
+- Criar cache controlado por data para reduzir chamadas repetidas.
 
 ## Google Maps
 

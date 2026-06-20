@@ -1,32 +1,19 @@
-# Dados mockados
+# Fontes reais de dados
 
-Os mocks ficam em `src/shared/constants/mockData.ts`.
+O projeto usa dados reais ou dados cadastrados pelo usuario para usuario, veiculo, produtos, mercados, localizacao e distancia.
 
-## Usuário
+## Usuario e veiculo
 
-Usuário demo:
+O usuario se cadastra pelo aplicativo e os dados ficam persistidos no backend. O veiculo tambem deve ser informado pelo usuario, porque consumo medio e preco do combustivel impactam diretamente a recomendacao.
 
-- Nome: Ana Beatriz Silva
-- E-mail: ana@email.com
-- Cidade: Maceio
-- Bairro: Ponta Verde
+## Produtos e estabelecimentos
 
-## Veículo
+Os produtos e estabelecimentos usados na recomendacao devem vir da API da SEFAZ. Quando o usuario adiciona um produto, o backend valida a descricao na SEFAZ. Na recomendacao, o backend consulta os precos por estabelecimento e calcula o custo total.
 
-- Modelo: Hyundai HB20 1.0
-- Combustível: gasolina
-- Consumo médio: 12 km/l
-- Preço por litro: R$ 5,89
+## Localizacao e rota
 
-## Produtos iniciais
+A origem vem do GPS real do celular. A rota/distancia usa servicos gratuitos configurados no backend, como OpenRouteService e OSRM. Se o GPS nao estiver autorizado, o usuario precisa liberar a permissao para calcular a recomendacao.
 
-- Arroz parboilizado
-- Feijao carioca
-- Leite integral
-- Cafe tradicional
+## Integracao pendente
 
-## Mercados
-
-Inclui supermercados e atacadistas como Palato, Assai, Atacadao, GBarbosa, Unicompra e Mix Mateus com preços e distâncias simuladas.
-
-Cada mercado também possui coordenadas mockadas. A recomendação recalcula a distância a partir de uma posição atual mockada do usuário, simulando o comportamento de uma integração futura com Google Maps ou outro serviço de rotas.
+Acidentes, bloqueios, congestionamentos, obras e chuva ainda precisam de uma API gratuita real. Enquanto essa fonte nao estiver configurada, esses fatores nao entram no calculo.

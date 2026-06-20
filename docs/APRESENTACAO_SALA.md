@@ -238,9 +238,7 @@ O processo e:
 6. Usa apenas estabelecimentos que tenham todos os produtos da lista.
 ```
 
-Essa ultima regra e importante. O sistema evita recomendar um mercado so porque ele tem um produto barato, mas nao tem o restante da compra.
-
-Se a SEFAZ nao retornar um estabelecimento completo para aquela lista, o backend usa a base mockada como fallback. Isso mantem o app funcionando durante a demonstracao.
+Essa ultima regra e importante. O sistema evita recomendar um mercado so porque ele tem um produto barato, mas nao tem o restante da compra. Quando a SEFAZ nao retorna dados suficientes, o app mostra o resultado real disponivel ou avisa que nao ha recomendacao confiavel; ele nao cria mercado demonstrativo para completar a lista.
 
 ## 10. Localizacao e mapa
 
@@ -252,9 +250,7 @@ Arquivo:
 Frontend/src/features/map/presentation/useCurrentLocation.ts
 ```
 
-Quando a tela de recomendacao abre, o app pede permissao de localizacao. Se o usuario permitir, o GPS e usado como origem da rota.
-
-Se a permissao for negada, o sistema usa uma localizacao demonstrativa para nao quebrar a experiencia.
+Quando a tela de recomendacao abre, o app pede permissao de localizacao. Se o usuario permitir, o GPS e usado como origem da rota. Se a permissao for negada, o app pede para ativar o GPS, porque a distancia precisa ser real.
 
 O mapa mostra:
 
@@ -306,7 +302,7 @@ Total dos produtos = R$ 18,00
 
 A distancia parte da localizacao atual do usuario.
 
-O backend tenta usar servico de rota. Quando nao consegue, usa uma estimativa local por coordenadas.
+O backend tenta usar servico de rota por ruas. A distancia usada na recomendacao deve vir de rota real entre o GPS do usuario e as coordenadas do estabelecimento.
 
 Importante: o OpenRouteService ou OSRM nao sao a origem dos estabelecimentos. Eles ajudam a calcular rota/distancia. Os estabelecimentos podem vir da SEFAZ.
 
@@ -362,7 +358,7 @@ O sistema tambem considera condicoes que podem afetar o gasto no caminho:
 - bloqueio;
 - obra na via.
 
-Hoje esses impactos ainda sao mockados, mas a arquitetura permite trocar por uma API no futuro.
+Hoje esses impactos ainda nao entram no calculo, porque dependem de uma API real de transito/incidentes. O sistema nao simula acidente ou congestionamento.
 
 Cada impacto aumenta o custo de deslocamento.
 
@@ -557,21 +553,18 @@ Responsavel por pedir permissao de GPS e observar a posicao do celular.
 ### Mapa
 
 ```txt
-Frontend/src/features/map/presentation/MockMapPreview.tsx
+Frontend/src/features/map/presentation/RouteMapPreview.tsx
 ```
 
 Mostra o mapa com rota, origem e destino.
 
-## 18. O que ainda e mockado
+## 18. O que ainda depende de integracao
 
-Mesmo com integracao real da SEFAZ, algumas partes ainda usam mock ou fallback:
+Com a integracao real da SEFAZ, o sistema usa dados reais ou cadastrados pelo usuario para usuario, produtos, mercados, localizacao e distancia. O ponto que ainda depende de uma fonte externa gratuita e:
 
-- impactos de percurso, como acidente e bloqueio;
-- fallback de mercados quando a SEFAZ nao retorna estabelecimento completo;
-- fallback de localizacao quando o GPS e negado;
-- fallback de distancia quando servicos externos nao respondem.
+- impactos de percurso, como acidente, bloqueio, congestionamento, obra e chuva.
 
-Isso nao e necessariamente um problema. E uma estrategia para o app continuar funcionando em apresentacao e desenvolvimento.
+Enquanto essa API nao estiver cadastrada e integrada, esses impactos ficam fora do calculo para nao apresentar informacao falsa.
 
 ## 19. Como explicar em sala
 
@@ -581,7 +574,7 @@ Uma fala simples:
 
 Outra fala mais tecnica:
 
-> A arquitetura foi separada por responsabilidades. O frontend cuida da experiencia mobile, formularios, mapa e estado da aplicacao. O backend centraliza regras de negocio, persistencia em SQLite e integracoes externas, como SEFAZ e servicos de rota. A recomendacao fica isolada em services, o que facilita testar, manter e trocar mocks por APIs reais.
+> A arquitetura foi separada por responsabilidades. O frontend cuida da experiencia mobile, formularios, mapa e estado da aplicacao. O backend centraliza regras de negocio, persistencia em SQLite e integracoes externas, como SEFAZ e servicos de rota. A recomendacao fica isolada em services, o que facilita testar, manter e evoluir as integracoes reais.
 
 ## 20. Roteiro de demonstracao
 
