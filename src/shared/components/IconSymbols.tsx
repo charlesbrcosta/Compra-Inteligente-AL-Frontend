@@ -15,11 +15,10 @@ export function TrashSymbol() {
 
 export function PencilLeftSymbol() {
   return (
-    <View className="h-5 w-5">
-      <View className="absolute bottom-0.5 right-0 h-0.5 w-2 rounded-full bg-ink" />
-      <View className="absolute left-1.5 top-2.5 h-0.5 w-4 -rotate-45 rounded-full bg-ink" />
-      <View className="absolute left-0.5 top-3.5 h-1.5 w-1.5 -rotate-45 border-b-2 border-l-2 border-ink" />
-      <View className="absolute right-1.5 top-1 h-1.5 w-1 -rotate-45 rounded-sm bg-muted" />
+    <View className="h-5 w-5 items-center justify-center">
+      <View className="h-1 w-4 -rotate-45 rounded-full bg-ink" />
+      <View className="absolute bottom-1 left-1 h-0 w-0 -rotate-45 border-b-[3px] border-r-[3px] border-b-transparent border-r-ink" />
+      <View className="absolute right-1 top-1 h-1.5 w-1.5 -rotate-45 rounded-sm bg-muted" />
     </View>
   );
 }
