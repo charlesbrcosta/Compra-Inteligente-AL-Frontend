@@ -87,7 +87,7 @@ export function RouteMapPreview({
 
       <View className="relative mt-4 h-80 overflow-hidden rounded-2xl border border-line">
         <MapHtmlView html={html} />
-        <View className="absolute right-3 top-3 gap-2">
+        <View className="absolute bottom-3 right-3 gap-2">
           <MapControlButton accessibilityLabel="Expandir mapa" onPress={() => setIsExpandedMapVisible(true)}>
             <ExpandIcon />
           </MapControlButton>
@@ -165,7 +165,7 @@ function ExpandedMapModal({
         </View>
         <View className="relative flex-1">
           <MapHtmlView html={html} />
-          <View className="absolute right-4 top-4">
+          <View className="absolute bottom-4 right-4">
             <MapControlButton accessibilityLabel="Centralizar na sua localizacao" onPress={onRecenter}>
               <LocationTargetIcon />
             </MapControlButton>
