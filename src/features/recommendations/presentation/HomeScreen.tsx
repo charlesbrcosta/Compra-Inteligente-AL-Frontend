@@ -78,14 +78,7 @@ export function HomeScreen() {
           </View>
         </View>
 
-        <View className="gap-3 sm:flex-row">
-          <View className="flex-1">
-            <Button title="Ver historico" variant="ghost" onPress={() => navigate('History')} />
-          </View>
-          <View className="flex-1">
-            <Button title="Impactos da rota" variant="ghost" onPress={() => navigate('RouteImpacts')} />
-          </View>
-        </View>
+        <Button title="Ver historico" variant="ghost" onPress={() => navigate('History')} />
       </View>
     </ScreenContainer>
   );

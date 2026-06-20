@@ -127,9 +127,6 @@ export function RecommendationsScreen() {
           <View className="flex-1">
             <Button title="Historico" variant="ghost" onPress={() => navigate('History')} />
           </View>
-          <View className="flex-1">
-            <Button title="Impactos" variant="ghost" onPress={() => navigate('RouteImpacts')} />
-          </View>
         </View>
 
         {!currentLocation ? (

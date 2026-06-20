@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext } from 'react';
 
-export type AppRouteName = 'Home' | 'Products' | 'Recommendations' | 'RouteImpacts' | 'History' | 'Profile';
+export type AppRouteName = 'Home' | 'Products' | 'Recommendations' | 'History' | 'Profile';
 
 interface AppNavigationContextValue {
   activeRoute: AppRouteName;

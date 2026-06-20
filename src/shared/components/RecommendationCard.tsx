@@ -6,7 +6,6 @@ import { formatCurrency, formatDistance } from '@/shared/utils/formatters';
 
 export function RecommendationCard({ recommendation }: { recommendation: Recommendation }) {
   const [isExpanded, setIsExpanded] = useState(recommendation.isBest);
-  const routeConditions = recommendation.routeConditions ?? [];
   const hasMissingProducts = recommendation.missingProducts.length > 0;
 
   return (
@@ -39,27 +38,10 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
       {isExpanded ? <View className="mt-4 gap-2">
         <Row label="Produtos" value={formatCurrency(recommendation.productsTotal)} />
         <Row label="Distancia" value={formatDistance(recommendation.market.distanceKm)} />
-        <Row label="Combustivel base" value={formatCurrency(recommendation.baseDisplacementCost ?? recommendation.displacementCost)} />
-        <Row label="Impacto do percurso" value={`${formatCurrency(recommendation.routeImpactCost ?? 0)} (${Math.round((recommendation.routeImpactPercent ?? 0) * 100)}%)`} />
-        <Row label="Combustivel ajustado" value={formatCurrency(recommendation.displacementCost)} />
+        <Row label="Combustivel estimado" value={formatCurrency(recommendation.displacementCost)} />
         <View className="h-px bg-line" />
         {!recommendation.isBest ? <Row label="Diferenca para o melhor" value={formatCurrency(recommendation.estimatedSavings)} /> : null}
       </View> : null}
-
-      {isExpanded && routeConditions.length > 0 ? (
-        <View className="mt-3 gap-1 rounded-xl bg-sand p-3">
-          <Text className="text-xs font-bold uppercase text-slate-600">Condicoes do percurso</Text>
-          {routeConditions.map((condition) => (
-            <Text key={`${recommendation.market.id}-${condition.type}-${condition.label}`} className="text-xs text-slate-700">
-              {condition.label}: +{Math.round(condition.impactPercent * 100)}%
-            </Text>
-          ))}
-        </View>
-      ) : isExpanded ? (
-        <Text className="mt-3 text-xs text-amber-800">
-          Impactos de transito em tempo real ainda nao estao integrados.
-        </Text>
-      ) : null}
 
       {hasMissingProducts ? (
         <View className="mt-3 rounded-xl bg-amber-50 p-3">

@@ -15,7 +15,6 @@ import { ProductsScreen } from '@/features/products/presentation/ProductsScreen'
 import { ProfileScreen } from '@/features/user/presentation/ProfileScreen';
 import { RecommendationsScreen } from '@/features/recommendations/presentation/RecommendationsScreen';
 import { RecommendationHistoryScreen } from '@/features/recommendations/presentation/RecommendationHistoryScreen';
-import { RouteImpactsScreen } from '@/features/recommendations/presentation/RouteImpactsScreen';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
@@ -24,7 +23,6 @@ const appRoutes: Array<{ component: ComponentType; name: AppRouteName; title: st
   { component: HomeScreen, name: 'Home', title: 'Inicio' },
   { component: ProductsScreen, name: 'Products', title: 'Produtos' },
   { component: RecommendationsScreen, name: 'Recommendations', title: 'Recomendacao' },
-  { component: RouteImpactsScreen, name: 'RouteImpacts', title: 'Impactos' },
   { component: RecommendationHistoryScreen, name: 'History', title: 'Historico' },
   { component: ProfileScreen, name: 'Profile', title: 'Perfil' },
 ];
