@@ -20,10 +20,10 @@ export function ProductCard({ product, onEdit, onRemove }: ProductCardProps) {
           </Text>
         </View>
         <View className="flex-row gap-2">
-          <Pressable className="h-10 w-10 items-center justify-center rounded-xl bg-green-50 active:opacity-80" onPress={onEdit}>
+          <Pressable className="h-8 w-8 items-center justify-center rounded-lg border border-line bg-white active:opacity-80" onPress={onEdit}>
             <PencilLeftSymbol />
           </Pressable>
-          <Pressable className="h-10 w-10 items-center justify-center rounded-xl border border-red-100 bg-red-50 active:opacity-80" onPress={onRemove}>
+          <Pressable className="h-8 w-8 items-center justify-center rounded-lg border border-red-100 bg-white active:opacity-80" onPress={onRemove}>
             <TrashSymbol />
           </Pressable>
         </View>
