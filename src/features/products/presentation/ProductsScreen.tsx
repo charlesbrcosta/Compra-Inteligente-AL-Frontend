@@ -214,7 +214,18 @@ export function ProductsScreen() {
               <Text className="mt-1 text-xs text-green-800">{editingProduct.name}</Text>
             </View>
           ) : null}
-          <Controller control={form.control} name="name" render={({ field, fieldState }) => <Input label="Produto" placeholder="Ex: Arroz parboilizado" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
+          <View className="flex-row items-end gap-2">
+            <View className="min-w-0 flex-1">
+              <Controller control={form.control} name="name" render={({ field, fieldState }) => <Input label="Produto" placeholder="Ex: Arroz parboilizado" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
+            </View>
+            <Pressable
+              accessibilityLabel="Escanear produto"
+              className="h-14 w-14 items-center justify-center rounded-xl bg-secondary active:opacity-80"
+              onPress={openScanner}
+            >
+              <BarcodeIcon />
+            </Pressable>
+          </View>
           <View className="gap-3 sm:flex-row">
             <View className="flex-1">
               <Controller control={form.control} name="quantity" render={({ field, fieldState }) => <Input keyboardType="numeric" label="Quantidade" onBlur={field.onBlur} onChangeText={field.onChange} value={String(field.value)} error={fieldState.error?.message} />} />
@@ -234,12 +245,6 @@ export function ProductsScreen() {
             title="Consultar precos reais na SEFAZ"
             variant="secondary"
             onPress={searchSefazProducts}
-          />
-          <Button
-            isLoading={isBarcodeLoading}
-            title="Escanear codigo de barras"
-            variant="ghost"
-            onPress={openScanner}
           />
           {editingProduct ? (
             <Button
@@ -290,7 +295,10 @@ export function ProductsScreen() {
           permissionGranted={Boolean(cameraPermission?.granted)}
           product={barcodeProduct}
           visible={isScannerVisible}
-          onAdd={addSefazProductToList}
+          onAdd={async (product) => {
+            await addSefazProductToList(product);
+            setIsScannerVisible(false);
+          }}
           onClose={() => setIsScannerVisible(false)}
           onRequestPermission={requestCameraPermission}
           onScan={handleBarcodeScanned}
@@ -389,49 +397,97 @@ function BarcodeScannerModal({
 }) {
   return (
     <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
-      <View className="flex-1 bg-black/70">
-        <View className="flex-1 p-5">
-          <View className="mb-4 flex-row items-center justify-between">
-            <Text className="text-2xl font-extrabold text-white">Escanear codigo</Text>
-            <Pressable className="h-11 w-11 items-center justify-center rounded-xl bg-white" onPress={onClose}>
-              <Text className="text-lg font-extrabold text-ink">X</Text>
+      <View className="flex-1 bg-[#0B0F0E]">
+        {permissionGranted ? (
+          <CameraView
+            className="absolute inset-0"
+            facing="back"
+            onBarcodeScanned={barcode ? undefined : onScan}
+            barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128'] }}
+          />
+        ) : (
+          <ScanFallback />
+        )}
+
+        <View className="absolute inset-0 bg-black/20 px-5 pb-8 pt-5">
+          <View className="flex-row items-center justify-between">
+            <Pressable className="h-10 w-10 items-center justify-center rounded-full bg-white/20" onPress={onClose}>
+              <Text className="text-xl font-extrabold text-white">X</Text>
             </Pressable>
+            <Text className="text-base font-extrabold text-white">Escanear produto</Text>
+            <View className="h-10 w-10" />
           </View>
 
-          {permissionGranted ? (
-            <View className="overflow-hidden rounded-3xl border border-white/20">
-              <CameraView
-                className="h-80 w-full"
-                facing="back"
-                onBarcodeScanned={barcode ? undefined : onScan}
-                barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128'] }}
-              />
+          <View className="flex-1 items-center justify-center">
+            <View className={`h-44 w-72 ${barcode ? 'opacity-45' : 'opacity-100'}`}>
+              <ScanCorner className="left-0 top-0 rounded-tl-xl border-b-0 border-r-0" />
+              <ScanCorner className="right-0 top-0 rounded-tr-xl border-b-0 border-l-0" />
+              <ScanCorner className="bottom-0 left-0 rounded-bl-xl border-r-0 border-t-0" />
+              <ScanCorner className="bottom-0 right-0 rounded-br-xl border-l-0 border-t-0" />
+              <View className="absolute left-2 right-2 top-1/2 h-0.5 rounded-full bg-success" />
             </View>
-          ) : (
-            <View className="rounded-3xl bg-white p-5">
-              <Text className="text-lg font-extrabold text-ink">Camera sem permissao</Text>
-              <Text className="mt-2 text-sm text-muted">Autorize a camera para ler o codigo de barras do produto.</Text>
-              <View className="mt-4">
-                <Button title="Permitir camera" variant="secondary" onPress={onRequestPermission} />
-              </View>
-            </View>
-          )}
 
-          <View className="mt-4 gap-3 rounded-3xl bg-sand p-5">
-            {barcode ? <Text className="text-xs font-bold uppercase text-muted">Codigo lido: {barcode}</Text> : null}
-            {isLoading ? <Text className="text-sm font-bold text-muted">Consultando SEFAZ...</Text> : null}
-            {error ? <Text className="text-sm font-bold text-red-700">{error}</Text> : null}
-            {product ? (
-              <>
-                <SefazProductResultCard product={product} isSaving={false} onAdd={() => onAdd(product)} onDismiss={onScanAgain} />
-                <Button title="Ler outro codigo" variant="ghost" onPress={onScanAgain} />
-              </>
-            ) : null}
+            <Text className="mt-8 max-w-64 text-center text-sm font-semibold leading-5 text-white/85">
+              {barcode ? 'Codigo lido. Consultando produto na SEFAZ.' : 'Aponte a camera para o codigo de barras do produto'}
+            </Text>
           </View>
         </View>
+
+        {!permissionGranted ? (
+          <View className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white p-6">
+            <Text className="text-center text-lg font-extrabold text-ink">Camera sem permissao</Text>
+            <Text className="mt-2 text-center text-sm leading-5 text-muted">
+              Autorize a camera para ler o codigo de barras do produto.
+            </Text>
+            <View className="mt-4">
+              <Button title="Permitir camera" variant="secondary" onPress={onRequestPermission} />
+            </View>
+          </View>
+        ) : null}
+
+        {barcode || isLoading || error || product ? (
+          <View className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white p-6">
+            <View className="mx-auto mb-3 h-12 w-12 items-center justify-center rounded-full bg-green-50">
+              <Text className="text-2xl font-extrabold text-success">{product ? 'V' : '...'}</Text>
+            </View>
+            {barcode ? <Text className="text-center text-xs font-bold uppercase tracking-wide text-muted">Codigo lido: {barcode}</Text> : null}
+            {isLoading ? <Text className="mt-2 text-center text-base font-extrabold text-ink">Consultando SEFAZ...</Text> : null}
+            {error ? <Text className="mt-2 text-center text-sm font-bold text-red-700">{error}</Text> : null}
+            {product ? (
+              <>
+                <Text className="mt-2 text-center text-lg font-extrabold text-ink">{normalizeSefazProductName(product)}</Text>
+                <Text className="mt-1 text-center text-sm text-muted">{product.marketName}</Text>
+                <Text className="mt-2 text-center text-2xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
+                <View className="mt-4">
+                  <Button title="Adicionar a lista" variant="success" onPress={() => onAdd(product)} />
+                </View>
+              </>
+            ) : null}
+            <View className="mt-2">
+              <Button title="Escanear de novo" variant="ghost" onPress={onScanAgain} />
+            </View>
+          </View>
+        ) : null}
       </View>
     </Modal>
   );
+}
+
+function ScanFallback() {
+  return (
+    <View className="absolute inset-0 bg-[#0B0F0E]">
+      <View className="absolute left-8 top-24 h-px w-72 bg-white/10" />
+      <View className="absolute left-10 top-44 h-px w-64 bg-white/10" />
+      <View className="absolute bottom-48 left-5 h-px w-80 bg-white/10" />
+      <View className="absolute left-16 top-16 h-96 w-px bg-white/10" />
+      <View className="absolute right-16 top-20 h-96 w-px bg-white/10" />
+      <View className="absolute left-1/4 top-1/3 h-60 w-60 rounded-full bg-white/5" />
+    </View>
+  );
+}
+
+function ScanCorner({ className }: { className: string }) {
+  return <View className={`absolute h-8 w-8 border-[3px] border-success ${className}`} />;
 }
 
 function SefazProductResultCard({
@@ -475,6 +531,18 @@ function SefazProductResultCard({
 
 function normalizeSefazProductName(product: SefazProductPrice) {
   return (product.sefazDescription || product.productName).trim();
+}
+
+function BarcodeIcon() {
+  return (
+    <View className="h-6 w-6 justify-center">
+      <View className="absolute left-0 top-0 h-2 w-2 border-l-2 border-t-2 border-white" />
+      <View className="absolute right-0 top-0 h-2 w-2 border-r-2 border-t-2 border-white" />
+      <View className="absolute bottom-0 left-0 h-2 w-2 border-b-2 border-l-2 border-white" />
+      <View className="absolute bottom-0 right-0 h-2 w-2 border-b-2 border-r-2 border-white" />
+      <View className="h-0.5 rounded-full bg-white" />
+    </View>
+  );
 }
 
 function getSefazProductKey(product: SefazProductPrice) {
