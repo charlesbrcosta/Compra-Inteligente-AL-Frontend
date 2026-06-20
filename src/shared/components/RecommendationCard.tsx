@@ -6,6 +6,7 @@ import { formatCurrency, formatDistance } from '@/shared/utils/formatters';
 
 export function RecommendationCard({ recommendation }: { recommendation: Recommendation }) {
   const [isExpanded, setIsExpanded] = useState(recommendation.isBest);
+  const [isProductListVisible, setIsProductListVisible] = useState(false);
   const hasMissingProducts = recommendation.missingProducts.length > 0;
 
   return (
@@ -31,6 +32,19 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
         <Text className="text-sm font-bold text-ink">{hasMissingProducts ? 'Total parcial' : 'Total final'}</Text>
         <View className="flex-row items-center gap-2">
           <Text className="text-2xl font-extrabold text-success">{formatCurrency(recommendation.finalTotal)}</Text>
+          <Pressable
+            accessibilityLabel="Ver produtos encontrados neste mercado"
+            className={`h-9 w-9 items-center justify-center rounded-xl border ${
+              isProductListVisible ? 'border-secondary bg-secondary' : 'border-line bg-white'
+            }`}
+            hitSlop={8}
+            onPress={(event) => {
+              event.stopPropagation();
+              setIsProductListVisible((current) => !current);
+            }}
+          >
+            <ListIcon isActive={isProductListVisible} />
+          </Pressable>
           <Text className="text-lg font-extrabold text-muted">{isExpanded ? '^' : 'v'}</Text>
         </View>
       </View>
@@ -43,6 +57,27 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
         {!recommendation.isBest ? <Row label="Diferenca para o melhor" value={formatCurrency(recommendation.estimatedSavings)} /> : null}
       </View> : null}
 
+      {isProductListVisible ? (
+        <View className="mt-4 rounded-2xl border border-line bg-sand p-4">
+          <Text className="text-sm font-extrabold text-ink">Produtos encontrados neste mercado</Text>
+          <View className="mt-3 gap-2">
+            {recommendation.market.products.length > 0 ? (
+              recommendation.market.products.map((product) => (
+                <View key={`${recommendation.market.id}-${product.productName}`} className="flex-row justify-between gap-3">
+                  <View className="min-w-0 flex-1">
+                    <Text className="text-sm font-bold text-ink">{product.productName}</Text>
+                    <Text className="text-xs text-muted">{product.unit}</Text>
+                  </View>
+                  <Text className="text-sm font-extrabold text-success">{formatCurrency(product.price)}</Text>
+                </View>
+              ))
+            ) : (
+              <Text className="text-sm text-muted">Nenhum produto da lista foi encontrado neste mercado.</Text>
+            )}
+          </View>
+        </View>
+      ) : null}
+
       {hasMissingProducts ? (
         <View className="mt-3 rounded-xl bg-amber-50 p-3">
           <Text className="text-xs font-bold text-amber-900">Total parcial, nao compara a lista completa</Text>
@@ -52,6 +87,16 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
         </View>
       ) : null}
     </Pressable>
+  );
+}
+
+function ListIcon({ isActive }: { isActive: boolean }) {
+  return (
+    <View className="h-5 w-5 justify-center gap-1">
+      <View className={`h-0.5 rounded-full ${isActive ? 'bg-white' : 'bg-secondary'}`} />
+      <View className={`h-0.5 rounded-full ${isActive ? 'bg-white' : 'bg-secondary'}`} />
+      <View className={`h-0.5 rounded-full ${isActive ? 'bg-white' : 'bg-secondary'}`} />
+    </View>
   );
 }
 
