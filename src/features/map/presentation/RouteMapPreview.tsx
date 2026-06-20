@@ -171,10 +171,26 @@ function buildLeafletHtml(
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';"
+    />
     <style>
       html, body, #map { height: 100%; margin: 0; padding: 0; width: 100%; }
       .leaflet-control-attribution { font-size: 10px; }
+      .map-loading,
+      .map-error {
+        align-items: center;
+        background: #f8fafc;
+        color: #475569;
+        display: flex;
+        font: 700 13px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        height: 100%;
+        justify-content: center;
+        padding: 16px;
+        text-align: center;
+      }
       .current-location {
         background: #2563eb;
         border: 3px solid white;
@@ -224,57 +240,97 @@ function buildLeafletHtml(
     </style>
   </head>
   <body>
-    <div id="map"></div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <div id="map"><div class="map-loading">Carregando mapa...</div></div>
     <script>
+      const leafletSources = [
+        'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+        'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js'
+      ];
       const origin = ${JSON.stringify([currentLocation.latitude, currentLocation.longitude])};
       const destination = ${JSON.stringify([destination.latitude, destination.longitude])};
       const routeCoordinates = ${JSON.stringify(routeCoordinates)};
       const bounds = ${JSON.stringify(bounds)};
       const establishmentMarkers = ${JSON.stringify(establishmentMarkers)};
 
-      const map = L.map('map', { zoomControl: true }).setView(origin, 13);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap'
-      }).addTo(map);
+      loadLeaflet(0);
 
-      const currentLocationIcon = L.divIcon({
-        className: '',
-        html: '<div class="current-location"></div>',
-        iconSize: [20, 20],
-        iconAnchor: [10, 10]
-      });
+      function loadLeaflet(index) {
+        if (window.L) {
+          initializeMap();
+          return;
+        }
 
-      L.marker(origin, { icon: currentLocationIcon }).addTo(map).bindPopup('Voce esta aqui');
+        if (index >= leafletSources.length) {
+          showMapError();
+          return;
+        }
 
-      establishmentMarkers.forEach(function (establishment) {
-        const icon = L.divIcon({
-          className: '',
-          html:
-            '<div class="market-marker ' + (establishment.isBest ? 'best' : '') + '">' +
-              '<div class="market-pin"><span></span></div>' +
-            '</div>',
-          iconSize: establishment.isBest ? [32, 32] : [28, 28],
-          iconAnchor: establishment.isBest ? [16, 30] : [14, 26]
-        });
-        const popup =
-          (establishment.isBest ? '<div class="popup-badge">Melhor recomendacao</div><br />' : '') +
-          '<strong>' + escapeHtml(establishment.name) + '</strong><br />' +
-          'Total final: ' + escapeHtml(establishment.totalLabel) + '<br />' +
-          'Produtos: ' + escapeHtml(establishment.productsLabel) + '<br />' +
-          escapeHtml(establishment.neighborhood + ', ' + establishment.city);
-
-        L.marker([establishment.latitude, establishment.longitude], { icon: icon })
-          .addTo(map)
-          .bindPopup(popup);
-      });
-
-      if (routeCoordinates.length > 0) {
-        L.polyline(routeCoordinates, { color: '#0f766e', weight: 5, opacity: 0.9 }).addTo(map);
+        const script = document.createElement('script');
+        script.src = leafletSources[index];
+        script.async = true;
+        script.onload = initializeMap;
+        script.onerror = function () {
+          loadLeaflet(index + 1);
+        };
+        document.head.appendChild(script);
       }
 
-      map.fitBounds(L.latLngBounds(bounds), { padding: [28, 28] });
+      function initializeMap() {
+        const mapElement = document.getElementById('map');
+        mapElement.innerHTML = '';
+
+        const map = L.map('map', { zoomControl: true }).setView(origin, 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        const currentLocationIcon = L.divIcon({
+          className: '',
+          html: '<div class="current-location"></div>',
+          iconSize: [20, 20],
+          iconAnchor: [10, 10]
+        });
+
+        L.marker(origin, { icon: currentLocationIcon }).addTo(map).bindPopup('Voce esta aqui');
+
+        establishmentMarkers.forEach(function (establishment) {
+          const icon = L.divIcon({
+            className: '',
+            html:
+              '<div class="market-marker ' + (establishment.isBest ? 'best' : '') + '">' +
+                '<div class="market-pin"><span></span></div>' +
+              '</div>',
+            iconSize: establishment.isBest ? [32, 32] : [28, 28],
+            iconAnchor: establishment.isBest ? [16, 30] : [14, 26]
+          });
+          const popup =
+            (establishment.isBest ? '<div class="popup-badge">Melhor recomendacao</div><br />' : '') +
+            '<strong>' + escapeHtml(establishment.name) + '</strong><br />' +
+            'Total final: ' + escapeHtml(establishment.totalLabel) + '<br />' +
+            'Produtos: ' + escapeHtml(establishment.productsLabel) + '<br />' +
+            escapeHtml(establishment.neighborhood + ', ' + establishment.city);
+
+          L.marker([establishment.latitude, establishment.longitude], { icon: icon })
+            .addTo(map)
+            .bindPopup(popup);
+        });
+
+        if (routeCoordinates.length > 0) {
+          L.polyline(routeCoordinates, { color: '#0f766e', weight: 5, opacity: 0.9 }).addTo(map);
+        }
+
+        map.fitBounds(L.latLngBounds(bounds), { padding: [28, 28] });
+        setTimeout(function () {
+          map.invalidateSize();
+          map.fitBounds(L.latLngBounds(bounds), { padding: [28, 28] });
+        }, 300);
+      }
+
+      function showMapError() {
+        document.getElementById('map').innerHTML =
+          '<div class="map-error">Nao foi possivel carregar o mapa agora. Verifique a internet e tente atualizar.</div>';
+      }
 
       function escapeHtml(value) {
         return String(value)
