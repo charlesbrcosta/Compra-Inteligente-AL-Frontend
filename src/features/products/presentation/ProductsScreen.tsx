@@ -9,6 +9,7 @@ import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { Header } from '@/shared/components/Header';
+import { TrashSymbol } from '@/shared/components/IconSymbols';
 import { Input } from '@/shared/components/Input';
 import { Loading } from '@/shared/components/Loading';
 import { ProductCard } from '@/shared/components/ProductCard';
@@ -575,7 +576,7 @@ function SefazProductResultCard({
             <Text className="text-lg font-extrabold text-success">V</Text>
           </Pressable>
           <Pressable className="h-11 w-11 items-center justify-center rounded-xl bg-red-50 active:opacity-80" onPress={onDismiss}>
-            <Text className="text-lg font-extrabold text-red-700">X</Text>
+            <TrashSymbol />
           </Pressable>
         </View>
       </View>

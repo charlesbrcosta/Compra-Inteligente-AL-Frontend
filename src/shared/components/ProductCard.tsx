@@ -1,5 +1,6 @@
 import { Pressable, Text, View } from 'react-native';
 
+import { PencilLeftSymbol, TrashSymbol } from '@/shared/components/IconSymbols';
 import { ShoppingProduct } from '@/shared/types/entities';
 
 interface ProductCardProps {
@@ -20,22 +21,13 @@ export function ProductCard({ product, onEdit, onRemove }: ProductCardProps) {
         </View>
         <View className="flex-row gap-2">
           <Pressable className="h-10 w-10 items-center justify-center rounded-xl bg-green-50 active:opacity-80" onPress={onEdit}>
-            <Text className="text-xl font-extrabold text-success">✎</Text>
+            <PencilLeftSymbol />
           </Pressable>
           <Pressable className="h-10 w-10 items-center justify-center rounded-xl border border-red-100 bg-red-50 active:opacity-80" onPress={onRemove}>
-            <TrashIcon />
+            <TrashSymbol />
           </Pressable>
         </View>
       </View>
-    </View>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <View className="items-center">
-      <View className="mb-0.5 h-0.5 w-4 rounded-full bg-red-700" />
-      <View className="h-4 w-3 rounded-sm border-2 border-red-700" />
     </View>
   );
 }
