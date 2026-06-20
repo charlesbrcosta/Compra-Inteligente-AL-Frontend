@@ -1,17 +1,18 @@
 import { Pressable, Text, View } from 'react-native';
 
-import { PencilLeftSymbol, TrashSymbol } from '@/shared/components/IconSymbols';
+import { CheckboxSymbol, PencilLeftSymbol } from '@/shared/components/IconSymbols';
 import { ShoppingProduct } from '@/shared/types/entities';
 
 interface ProductCardProps {
+  isSelected: boolean;
   product: ShoppingProduct;
   onEdit: () => void;
-  onRemove: () => void;
+  onToggleSelect: () => void;
 }
 
-export function ProductCard({ product, onEdit, onRemove }: ProductCardProps) {
+export function ProductCard({ isSelected, product, onEdit, onToggleSelect }: ProductCardProps) {
   return (
-    <View className="rounded-2xl border border-line bg-white p-4">
+    <View className={`rounded-2xl border p-4 ${isSelected ? 'border-success bg-green-50' : 'border-line bg-white'}`}>
       <View className="flex-row items-center justify-between gap-3">
         <View className="min-w-0 flex-1">
           <Text className="text-base font-extrabold text-ink">{product.name}</Text>
@@ -23,8 +24,13 @@ export function ProductCard({ product, onEdit, onRemove }: ProductCardProps) {
           <Pressable className="h-8 w-8 items-center justify-center rounded-lg border border-line bg-white active:opacity-80" onPress={onEdit}>
             <PencilLeftSymbol />
           </Pressable>
-          <Pressable className="h-8 w-8 items-center justify-center rounded-lg border border-red-100 bg-white active:opacity-80" onPress={onRemove}>
-            <TrashSymbol />
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: isSelected }}
+            className="h-8 w-8 items-center justify-center rounded-lg border border-line bg-white active:opacity-80"
+            onPress={onToggleSelect}
+          >
+            <CheckboxSymbol isChecked={isSelected} />
           </Pressable>
         </View>
       </View>

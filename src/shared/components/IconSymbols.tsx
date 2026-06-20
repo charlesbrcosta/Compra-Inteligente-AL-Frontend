@@ -23,3 +23,17 @@ export function PencilLeftSymbol() {
     </View>
   );
 }
+
+export function CheckboxSymbol({ isChecked }: { isChecked: boolean }) {
+  return (
+    <View
+      className={`h-5 w-5 items-center justify-center rounded-md border-2 ${
+        isChecked ? 'border-success bg-success' : 'border-line bg-white'
+      }`}
+    >
+      {isChecked ? (
+        <View className="h-2.5 w-1.5 rotate-45 border-b-2 border-r-2 border-white" />
+      ) : null}
+    </View>
+  );
+}

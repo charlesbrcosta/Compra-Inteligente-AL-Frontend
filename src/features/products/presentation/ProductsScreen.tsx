@@ -37,6 +37,10 @@ export function ProductsScreen() {
   const [barcodeError, setBarcodeError] = useState<string | null>(null);
   const [isBarcodeLoading, setIsBarcodeLoading] = useState(false);
   const [isSefazLoading, setIsSefazLoading] = useState(false);
+  const [isSubmittingProduct, setIsSubmittingProduct] = useState(false);
+  const [pendingSefazProductKeys, setPendingSefazProductKeys] = useState<string[]>([]);
+  const [productFilter, setProductFilter] = useState('');
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const scrollViewRef = useRef<ScrollView>(null);
   const form = useForm<ProductFormData>({
@@ -54,7 +58,15 @@ export function ProductsScreen() {
     await loadProducts();
   }, [loadProducts]);
 
+  useEffect(() => {
+    setSelectedProductIds((current) => current.filter((id) => products.some((product) => product.id === id)));
+  }, [products]);
+
   const submit = form.handleSubmit(async (data) => {
+    if (isSubmittingProduct || isSaving) {
+      return;
+    }
+
     const product = {
       id: editingProduct?.id ?? createId(),
       name: data.name,
@@ -63,6 +75,7 @@ export function ProductsScreen() {
     };
 
     try {
+      setIsSubmittingProduct(true);
       if (editingProduct) {
         await updateProduct(product);
       } else {
@@ -73,6 +86,8 @@ export function ProductsScreen() {
       form.reset({ name: '', quantity: 1, unit: 'un' });
     } catch {
       // The store keeps the user-facing error message.
+    } finally {
+      setIsSubmittingProduct(false);
     }
   });
 
@@ -84,10 +99,42 @@ export function ProductsScreen() {
     });
   };
 
-  const confirmRemove = (product: ShoppingProduct) => {
-    Alert.alert('Remover produto', `Deseja remover ${product.name} da lista?`, [
+  const filteredProducts = products.filter((product) => normalizeText(product.name).includes(normalizeText(productFilter)));
+  const filteredProductIds = filteredProducts.map((product) => product.id);
+  const isEveryFilteredProductSelected =
+    filteredProductIds.length > 0 && filteredProductIds.every((id) => selectedProductIds.includes(id));
+
+  const toggleProductSelection = (productId: string) => {
+    setSelectedProductIds((current) =>
+      current.includes(productId) ? current.filter((id) => id !== productId) : [...current, productId],
+    );
+  };
+
+  const toggleFilteredProductsSelection = () => {
+    setSelectedProductIds((current) => {
+      if (isEveryFilteredProductSelected) {
+        return current.filter((id) => !filteredProductIds.includes(id));
+      }
+
+      return Array.from(new Set([...current, ...filteredProductIds]));
+    });
+  };
+
+  const confirmRemoveSelectedProducts = () => {
+    if (selectedProductIds.length === 0) {
+      return;
+    }
+
+    Alert.alert('Remover produtos', `Deseja remover ${selectedProductIds.length} produto(s) selecionado(s)?`, [
       { text: 'Cancelar', style: 'cancel' },
-      { text: 'Remover', style: 'destructive', onPress: () => removeProduct(product.id).catch(() => undefined) },
+      {
+        text: 'Remover',
+        style: 'destructive',
+        onPress: async () => {
+          await Promise.all(selectedProductIds.map((productId) => removeProduct(productId).catch(() => undefined)));
+          setSelectedProductIds([]);
+        },
+      },
     ]);
   };
 
@@ -114,6 +161,12 @@ export function ProductsScreen() {
   };
 
   const addSefazProductToList = async (sefazProduct: SefazProductPrice) => {
+    const productKey = getSefazProductKey(sefazProduct);
+
+    if (pendingSefazProductKeys.includes(productKey) || isSaving) {
+      return;
+    }
+
     const name = normalizeSefazProductName(sefazProduct);
     const unit = normalizeSefazUnit(sefazProduct.unit);
     const alreadyExists = products.some((product) => normalizeText(product.name) === normalizeText(name));
@@ -124,16 +177,19 @@ export function ProductsScreen() {
     }
 
     try {
+      setPendingSefazProductKeys((current) => [...current, productKey]);
       await addProduct({
         id: createId(),
         name,
         quantity: 1,
         unit,
       });
-      setDismissedSefazProducts((current) => [...current, getSefazProductKey(sefazProduct)]);
+      setDismissedSefazProducts((current) => [...current, productKey]);
       Alert.alert('Produto adicionado', `${name} foi adicionado a sua lista.`);
     } catch {
       // The store keeps the user-facing error message.
+    } finally {
+      setPendingSefazProductKeys((current) => current.filter((key) => key !== productKey));
     }
   };
 
@@ -244,7 +300,7 @@ export function ProductsScreen() {
             </View>
           </View>
           <Button
-            isLoading={isSaving}
+            isLoading={isSaving || isSubmittingProduct}
             title={editingProduct ? 'Salvar alteracoes' : 'Adicionar produto'}
             variant="success"
             onPress={submit}
@@ -275,15 +331,51 @@ export function ProductsScreen() {
 
         <View className="mt-5 gap-3">
           <Text className="text-xl font-extrabold text-ink">Sua lista ({products.length} itens)</Text>
+          {products.length > 0 ? (
+            <View className="gap-3 rounded-2xl border border-line bg-white p-4">
+              <Input
+                label="Filtrar produtos"
+                onChangeText={setProductFilter}
+                placeholder="Buscar na sua lista"
+                value={productFilter}
+              />
+              <View className="gap-2 sm:flex-row">
+                <Pressable
+                  className="min-h-12 flex-1 items-center justify-center rounded-xl border border-line bg-white px-4 active:opacity-80"
+                  disabled={filteredProducts.length === 0}
+                  onPress={toggleFilteredProductsSelection}
+                >
+                  <Text className="text-center text-sm font-bold text-ink">
+                    {isEveryFilteredProductSelected ? 'Limpar selecao filtrada' : 'Selecionar filtrados'}
+                  </Text>
+                </Pressable>
+                {selectedProductIds.length > 0 ? (
+                  <Button
+                    isLoading={isSaving}
+                    title={`Excluir selecionados (${selectedProductIds.length})`}
+                    variant="danger"
+                    onPress={confirmRemoveSelectedProducts}
+                  />
+                ) : (
+                  <View className="min-h-12 items-center justify-center rounded-xl bg-sand px-4">
+                    <Text className="text-center text-sm font-bold text-muted">Selecione para excluir</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          ) : null}
           {products.length === 0 ? (
             <EmptyState title="Sua lista esta vazia" description="Adicione itens para calcular o melhor mercado." />
+          ) : filteredProducts.length === 0 ? (
+            <EmptyState title="Nenhum produto encontrado" description="Ajuste o filtro para visualizar outros itens da sua lista." />
           ) : (
-            products.map((product) => (
+            filteredProducts.map((product) => (
               <ProductCard
                 key={product.id}
+                isSelected={selectedProductIds.includes(product.id)}
                 product={product}
                 onEdit={() => startEdit(product)}
-                onRemove={() => confirmRemove(product)}
+                onToggleSelect={() => toggleProductSelection(product.id)}
               />
             ))
           )}
@@ -291,6 +383,7 @@ export function ProductsScreen() {
         <SefazResultsModal
           dismissedProductKeys={dismissedSefazProducts}
           isSaving={isSaving}
+          pendingProductKeys={pendingSefazProductKeys}
           products={sefazProducts}
           visible={isSefazModalVisible}
           onAdd={addSefazProductToList}
@@ -304,6 +397,7 @@ export function ProductsScreen() {
           permissionGranted={Boolean(cameraPermission?.granted)}
           product={barcodeProduct}
           visible={isScannerVisible}
+          isAddingProduct={barcodeProduct ? pendingSefazProductKeys.includes(getSefazProductKey(barcodeProduct)) || isSaving : false}
           onAdd={async (product) => {
             await addSefazProductToList(product);
             closeScanner();
@@ -324,6 +418,7 @@ export function ProductsScreen() {
 function SefazResultsModal({
   dismissedProductKeys,
   isSaving,
+  pendingProductKeys,
   products,
   visible,
   onAdd,
@@ -332,6 +427,7 @@ function SefazResultsModal({
 }: {
   dismissedProductKeys: string[];
   isSaving: boolean;
+  pendingProductKeys: string[];
   products: SefazProductPrice[];
   visible: boolean;
   onAdd: (product: SefazProductPrice) => void;
@@ -349,7 +445,7 @@ function SefazResultsModal({
           <View className="mb-4 flex-row items-start justify-between gap-4">
             <View className="min-w-0 flex-1">
               <Text className="text-2xl font-extrabold text-ink">Produtos encontrados</Text>
-              <Text className="mt-1 text-sm text-muted">Toque em V para adicionar ou X para remover da selecao.</Text>
+              <Text className="mt-1 text-sm text-muted">Toque em V para adicionar ou na lixeira para remover da selecao.</Text>
             </View>
             <Pressable className="h-11 w-11 items-center justify-center rounded-xl border border-line bg-white" onPress={onClose}>
               <Text className="text-lg font-extrabold text-ink">X</Text>
@@ -365,7 +461,7 @@ function SefazResultsModal({
               visibleProducts.map((product) => (
                 <SefazProductResultCard
                   key={getSefazProductKey(product)}
-                  isSaving={isSaving}
+                  isSaving={isSaving || pendingProductKeys.includes(getSefazProductKey(product))}
                   product={product}
                   onAdd={() => onAdd(product)}
                   onDismiss={() => onDismissProduct(product)}
@@ -382,6 +478,7 @@ function SefazResultsModal({
 function BarcodeScannerModal({
   barcode,
   error,
+  isAddingProduct,
   isLoading,
   permissionGranted,
   product,
@@ -394,6 +491,7 @@ function BarcodeScannerModal({
 }: {
   barcode: string | null;
   error: string | null;
+  isAddingProduct: boolean;
   isLoading: boolean;
   permissionGranted: boolean;
   product: SefazProductPrice | null;
@@ -514,7 +612,7 @@ function BarcodeScannerModal({
                 <Text className="mt-1 text-center text-sm text-muted">{product.marketName}</Text>
                 <Text className="mt-2 text-center text-2xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
                 <View className="mt-4">
-                  <Button title="Adicionar a lista" variant="success" onPress={() => onAdd(product)} />
+                  <Button isLoading={isAddingProduct} title="Adicionar a lista" variant="success" onPress={() => onAdd(product)} />
                 </View>
               </>
             ) : null}
