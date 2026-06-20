@@ -15,10 +15,10 @@ interface RouteResponse {
   coordinates: RoutePoint[];
   distanceKm: number | null;
   durationMinutes: number | null;
-  source: 'openrouteservice' | 'osrm' | 'local_estimate';
+  source: 'openrouteservice' | 'osrm';
 }
 
-export function MockMapPreview({
+export function RouteMapPreview({
   currentLocation,
   market,
   recommendations = [],
@@ -112,7 +112,9 @@ export function MockMapPreview({
             ))}
           </View>
         ) : (
-          <Text className="text-sm text-emerald-700">Sem congestionamento, acidente ou bloqueio mockado para esta rota.</Text>
+          <Text className="text-sm text-amber-800">
+            Dados de congestionamento, acidentes e bloqueios em tempo real ainda nao estao integrados.
+          </Text>
         )}
       </View>
     </View>
@@ -128,7 +130,7 @@ function getRouteSourceLabel(source?: RouteResponse['source'], routeError?: stri
     return 'Calculando rota';
   }
 
-  return source === 'local_estimate' ? 'Estimativa local' : 'Rota por ruas';
+  return 'Rota por ruas';
 }
 
 function buildLeafletHtml(

@@ -2,7 +2,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { MockMapPreview } from '@/features/map/presentation/MockMapPreview';
+import { RouteMapPreview } from '@/features/map/presentation/RouteMapPreview';
 import { useCurrentLocation } from '@/features/map/presentation/useCurrentLocation';
 import { useProductStore } from '@/features/products/store/productStore';
 import { useVehicleStore } from '@/features/vehicle/store/vehicleStore';
@@ -128,7 +128,7 @@ export function RecommendationsScreen() {
             onOpenSettings={openLocationSettings}
           />
         ) : mapMarket ? (
-          <MockMapPreview currentLocation={currentLocation} market={mapMarket} recommendations={visibleRecommendations} />
+          <RouteMapPreview currentLocation={currentLocation} market={mapMarket} recommendations={visibleRecommendations} />
         ) : (
           <LocationReadyEmptyMap
             description={

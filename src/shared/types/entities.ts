@@ -3,7 +3,7 @@ export type MarketType = 'supermercado' | 'atacadista';
 export type UnitType = 'un' | 'kg' | 'g' | 'l' | 'ml' | 'pct' | 'cx';
 export type RouteConditionType = 'accident' | 'rain' | 'road_block' | 'traffic' | 'road_work';
 export type RouteConditionSeverity = 'low' | 'medium' | 'high';
-export type DistanceSource = 'openrouteservice' | 'osrm' | 'local_estimate';
+export type DistanceSource = 'openrouteservice' | 'osrm';
 
 export interface User {
   id: string;

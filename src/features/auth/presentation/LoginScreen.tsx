@@ -62,7 +62,7 @@ export function LoginScreen({ navigation }: Props) {
         <Button title="Criar cadastro" variant="ghost" onPress={() => navigation.navigate('Register')} />
       </Card>
       <View className="mt-4">
-        <Text className="text-center text-xs text-muted">Login mockado: qualquer senha com 4+ caracteres funciona.</Text>
+        <Text className="text-center text-xs text-muted">Use um e-mail cadastrado para iniciar uma sessao local no app.</Text>
       </View>
     </AuthContainer>
   );

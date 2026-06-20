@@ -46,7 +46,9 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
           ))}
         </View>
       ) : (
-        <Text className="mt-3 text-xs text-emerald-700">Percurso sem impactos mockados no momento.</Text>
+        <Text className="mt-3 text-xs text-amber-800">
+          Impactos de transito em tempo real ainda nao estao integrados.
+        </Text>
       )}
 
       {hasMissingProducts ? (
