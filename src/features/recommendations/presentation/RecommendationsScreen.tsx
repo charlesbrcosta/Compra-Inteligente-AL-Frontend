@@ -1,5 +1,5 @@
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { MockMapPreview } from '@/features/map/presentation/MockMapPreview';
@@ -14,7 +14,7 @@ import { Header } from '@/shared/components/Header';
 import { Loading } from '@/shared/components/Loading';
 import { RecommendationCard } from '@/shared/components/RecommendationCard';
 import { ScreenContainer } from '@/shared/components/ScreenContainer';
-import { Recommendation } from '@/shared/types/entities';
+import { GeoLocation, Recommendation } from '@/shared/types/entities';
 
 type MarketFilter = 'all' | 'city' | 'neighborhood';
 
@@ -34,11 +34,14 @@ export function RecommendationsScreen() {
     stopWatchingLocation,
   } = useCurrentLocation();
   const [filter, setFilter] = useState<MarketFilter>('all');
+  const lastRecommendationLocationRef = useRef(currentLocation);
 
   const reloadScreen = useCallback(async () => {
+    lastRecommendationLocationRef.current = null;
     await Promise.all([loadProducts(), loadUser(), loadVehicle(), loadCurrentLocation()]);
 
     if (currentLocation) {
+      lastRecommendationLocationRef.current = currentLocation;
       await loadRecommendations(currentLocation);
     }
   }, [currentLocation, loadCurrentLocation, loadProducts, loadRecommendations, loadUser, loadVehicle]);
@@ -60,9 +63,15 @@ export function RecommendationsScreen() {
   useEffect(() => {
     if (!currentLocation) {
       clearRecommendations();
+      lastRecommendationLocationRef.current = null;
       return;
     }
 
+    if (!shouldRefreshRecommendations(lastRecommendationLocationRef.current, currentLocation)) {
+      return;
+    }
+
+    lastRecommendationLocationRef.current = currentLocation;
     loadRecommendations(currentLocation);
   }, [clearRecommendations, currentLocation, loadRecommendations]);
 
@@ -254,6 +263,31 @@ function normalize(value: string) {
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim();
+}
+
+function shouldRefreshRecommendations(previousLocation: GeoLocation | null, currentLocation: GeoLocation) {
+  if (!previousLocation) {
+    return true;
+  }
+
+  return calculateDistanceKm(previousLocation, currentLocation) >= 0.2;
+}
+
+function calculateDistanceKm(origin: GeoLocation, destination: GeoLocation) {
+  const earthRadiusKm = 6371;
+  const deltaLatitude = toRadians(destination.latitude - origin.latitude);
+  const deltaLongitude = toRadians(destination.longitude - origin.longitude);
+  const originLatitude = toRadians(origin.latitude);
+  const destinationLatitude = toRadians(destination.latitude);
+  const haversine =
+    Math.sin(deltaLatitude / 2) ** 2 +
+    Math.cos(originLatitude) * Math.cos(destinationLatitude) * Math.sin(deltaLongitude / 2) ** 2;
+
+  return 2 * earthRadiusKm * Math.asin(Math.sqrt(haversine));
+}
+
+function toRadians(value: number) {
+  return (value * Math.PI) / 180;
 }
 
 function FilterButton({ isActive, label, onPress }: { isActive: boolean; label: string; onPress: () => void }) {
