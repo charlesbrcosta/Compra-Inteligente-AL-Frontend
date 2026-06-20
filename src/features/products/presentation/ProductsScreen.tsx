@@ -130,7 +130,7 @@ export function ProductsScreen() {
 
   return (
     <ScreenContainer onRefresh={reloadScreen} scrollViewRef={scrollViewRef}>
-        <Header title="Lista de compras" subtitle="Informe quantidade e unidade para comparar os mercados mockados." />
+        <Header title="Lista de compras" subtitle="Informe quantidade e unidade para consultar produtos reais na SEFAZ." />
         {error ? (
           <View className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
             <View className="flex-row items-center justify-between gap-3">

@@ -40,8 +40,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
       const savedProduct = await service.create(product);
       const products = [...get().products, savedProduct];
       set({ products });
-    } catch {
-      set({ error: 'Nao foi possivel adicionar o produto.' });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Nao foi possivel adicionar o produto.' });
       throw new Error('Create product failed');
     } finally {
       set({ isSaving: false });
@@ -53,8 +53,8 @@ export const useProductStore = create<ProductState>((set, get) => ({
       const savedProduct = await service.update(product);
       const products = get().products.map((current) => (current.id === savedProduct.id ? savedProduct : current));
       set({ products });
-    } catch {
-      set({ error: 'Nao foi possivel atualizar o produto.' });
+    } catch (error) {
+      set({ error: error instanceof Error ? error.message : 'Nao foi possivel atualizar o produto.' });
       throw new Error('Update product failed');
     } finally {
       set({ isSaving: false });
