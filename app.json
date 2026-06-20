@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
-      "backgroundColor": "#f8fafc"
+      "backgroundColor": "#FFF8EE"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -23,7 +23,7 @@
         "ACCESS_FINE_LOCATION"
       ],
       "adaptiveIcon": {
-        "backgroundColor": "#f8fafc"
+        "backgroundColor": "#FFF8EE"
       },
       "package": "com.comprainteligente.al"
     }

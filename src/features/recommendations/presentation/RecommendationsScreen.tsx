@@ -2,6 +2,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
+import { useAppNavigation } from '@/app/routes/appNavigation';
 import { RouteMapPreview } from '@/features/map/presentation/RouteMapPreview';
 import { useCurrentLocation } from '@/features/map/presentation/useCurrentLocation';
 import { useProductStore } from '@/features/products/store/productStore';
@@ -24,6 +25,7 @@ export function RecommendationsScreen() {
   const { user, loadUser } = useUserStore();
   const { loadVehicle } = useVehicleStore();
   const { recommendations, isLoading, error, clearRecommendations, loadRecommendations } = useRecommendations();
+  const { navigate } = useAppNavigation();
   const {
     currentLocation,
     isLocating,
@@ -119,6 +121,15 @@ export function RecommendationsScreen() {
           <FilterButton isActive={filter === 'all'} label="Todos" onPress={() => setFilter('all')} />
           <FilterButton isActive={filter === 'city'} label="Cidade" onPress={() => setFilter('city')} />
           <FilterButton isActive={filter === 'neighborhood'} label="Bairro" onPress={() => setFilter('neighborhood')} />
+        </View>
+
+        <View className="gap-3 sm:flex-row">
+          <View className="flex-1">
+            <Button title="Historico" variant="ghost" onPress={() => navigate('History')} />
+          </View>
+          <View className="flex-1">
+            <Button title="Impactos" variant="ghost" onPress={() => navigate('RouteImpacts')} />
+          </View>
         </View>
 
         {!currentLocation ? (

@@ -141,7 +141,7 @@ export function ProfileScreen() {
               <Controller control={userForm.control} name="neighborhood" render={({ field, fieldState }) => <Input label="Bairro" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
             </View>
           </View>
-          <Button title="Salvar usuario" onPress={submitUser} isLoading={userForm.formState.isSubmitting} />
+          <Button title="Salvar usuario" variant="success" onPress={submitUser} isLoading={userForm.formState.isSubmitting} />
         </Card>
 
         <Card className="gap-4">
@@ -167,7 +167,7 @@ export function ProfileScreen() {
             isLoading={isFuelLookupLoading}
             onPress={updateFuelPriceFromSefaz}
           />
-          <Button title="Salvar veiculo" onPress={submitVehicle} isLoading={vehicleForm.formState.isSubmitting} />
+          <Button title="Salvar veiculo" variant="success" onPress={submitVehicle} isLoading={vehicleForm.formState.isSubmitting} />
         </Card>
 
         <Button title="Sair" variant="danger" onPress={logout} />

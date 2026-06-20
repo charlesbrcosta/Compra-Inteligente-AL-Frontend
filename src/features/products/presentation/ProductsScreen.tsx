@@ -163,6 +163,7 @@ export function ProductsScreen() {
           <Button
             isLoading={isSaving}
             title={editingProduct ? 'Salvar alteracoes' : 'Adicionar produto'}
+            variant="success"
             onPress={submit}
           />
           <Button
@@ -206,7 +207,7 @@ export function ProductsScreen() {
                     <Text className="text-2xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
                     <Button
                       title="Adicionar a lista"
-                      variant="secondary"
+                      variant="success"
                       isLoading={isSaving}
                       onPress={() => addSefazProductToList(product)}
                     />

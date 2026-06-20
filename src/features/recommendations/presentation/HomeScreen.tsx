@@ -1,7 +1,9 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
+import { useAppNavigation } from '@/app/routes/appNavigation';
+import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
 import { Header } from '@/shared/components/Header';
 import { MarketCard } from '@/shared/components/MarketCard';
@@ -17,6 +19,7 @@ export function HomeScreen() {
   const { user, loadUser } = useUserStore();
   const { vehicle, loadVehicle } = useVehicleStore();
   const { recommendations, loadRecommendations } = useRecommendations();
+  const { navigate } = useAppNavigation();
   const best = recommendations[0];
 
   const reloadScreen = useCallback(async () => {
@@ -35,7 +38,7 @@ export function HomeScreen() {
 
       <View className="gap-4">
         <View className="overflow-hidden rounded-3xl bg-primary p-6">
-          <Text className="self-start rounded-full bg-amber-700 px-3 py-1 text-xs font-extrabold uppercase text-white">
+          <Text className="self-start rounded-full bg-[#C97A12] px-3 py-1 text-xs font-extrabold uppercase text-white">
             Recomendacao de hoje
           </Text>
           <Text className="mt-4 text-2xl font-extrabold leading-8 text-white">
@@ -46,9 +49,9 @@ export function HomeScreen() {
               ? `Economia estimada considerando produtos, combustivel e ida e volta.`
               : 'Adicione produtos e cadastre seu veiculo para descobrir o menor custo total.'}
           </Text>
-          <View className="mt-5 self-start rounded-xl bg-white px-4 py-2">
+          <Pressable className="mt-5 self-start rounded-xl bg-white px-4 py-2 active:opacity-80" onPress={() => navigate('Recommendations')}>
             <Text className="text-sm font-extrabold text-primary">Ver comparacao completa</Text>
-          </View>
+          </Pressable>
         </View>
 
         <View className="flex-row rounded-2xl border border-line bg-white p-4">
@@ -72,6 +75,15 @@ export function HomeScreen() {
             {recommendations.slice(0, 3).map((recommendation) => (
               <MarketCard key={recommendation.market.id} market={recommendation.market} />
             ))}
+          </View>
+        </View>
+
+        <View className="gap-3 sm:flex-row">
+          <View className="flex-1">
+            <Button title="Ver historico" variant="ghost" onPress={() => navigate('History')} />
+          </View>
+          <View className="flex-1">
+            <Button title="Impactos da rota" variant="ghost" onPress={() => navigate('RouteImpacts')} />
           </View>
         </View>
       </View>

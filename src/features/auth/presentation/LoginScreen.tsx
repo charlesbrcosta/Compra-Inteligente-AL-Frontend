@@ -68,7 +68,7 @@ export function LoginScreen({ navigation }: Props) {
           )}
         />
         <Button title="Entrar" onPress={onSubmit} isLoading={form.formState.isSubmitting} />
-        <Button title="Criar cadastro" variant="secondary" onPress={() => navigation.navigate('Register')} />
+        <Button title="Criar cadastro" variant="success" onPress={() => navigation.navigate('Register')} />
       </Card>
       <View className="mt-4">
         <Text className="text-center text-xs text-muted">Use um e-mail cadastrado para iniciar uma sessao local no app.</Text>
