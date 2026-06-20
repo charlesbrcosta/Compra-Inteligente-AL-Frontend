@@ -417,7 +417,7 @@ function BarcodeScannerModal({
           <ScanFallback />
         )}
 
-        <View className="absolute inset-0 z-10 bg-black/20 px-5 pb-8 pt-5" style={styles.scanOverlay}>
+        <View className="absolute inset-0 z-10 bg-black/20 px-5 pb-8 pt-10" style={styles.scanOverlay}>
           <View className="flex-row items-center justify-between">
             <Pressable
               accessibilityLabel="Fechar scanner"
@@ -460,9 +460,6 @@ function BarcodeScannerModal({
 
         {barcode || isLoading || error || product ? (
           <View className="absolute bottom-0 left-0 right-0 z-20 rounded-t-3xl bg-white p-6" style={styles.scanPanel}>
-            <View className="mx-auto mb-3 h-12 w-12 items-center justify-center rounded-full bg-green-50">
-              <Text className="text-2xl font-extrabold text-success">{product ? 'V' : '...'}</Text>
-            </View>
             {barcode ? <Text className="text-center text-xs font-bold uppercase tracking-wide text-muted">Codigo lido: {barcode}</Text> : null}
             {isLoading ? <Text className="mt-2 text-center text-base font-extrabold text-ink">Consultando SEFAZ...</Text> : null}
             {error ? <Text className="mt-2 text-center text-sm font-bold text-red-700">{error}</Text> : null}
