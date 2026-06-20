@@ -3,7 +3,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { BarcodeScanningResult, CameraView, useCameraPermissions } from 'expo-camera';
 import { useCallback, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
@@ -187,6 +187,14 @@ export function ProductsScreen() {
     }
   };
 
+  const closeScanner = () => {
+    setIsScannerVisible(false);
+    setScannedBarcode(null);
+    setBarcodeProduct(null);
+    setBarcodeError(null);
+    setIsBarcodeLoading(false);
+  };
+
   if (isLoading && products.length === 0) {
     return <Loading label="Carregando produtos" />;
   }
@@ -297,9 +305,9 @@ export function ProductsScreen() {
           visible={isScannerVisible}
           onAdd={async (product) => {
             await addSefazProductToList(product);
-            setIsScannerVisible(false);
+            closeScanner();
           }}
-          onClose={() => setIsScannerVisible(false)}
+          onClose={closeScanner}
           onRequestPermission={requestCameraPermission}
           onScan={handleBarcodeScanned}
           onScanAgain={() => {
@@ -396,11 +404,11 @@ function BarcodeScannerModal({
   onScanAgain: () => void;
 }) {
   return (
-    <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
+    <Modal animationType="slide" presentationStyle="fullScreen" statusBarTranslucent visible={visible} onRequestClose={onClose}>
       <View className="flex-1 bg-[#0B0F0E]">
         {permissionGranted ? (
           <CameraView
-            className="absolute inset-0"
+            style={StyleSheet.absoluteFillObject}
             facing="back"
             onBarcodeScanned={barcode ? undefined : onScan}
             barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128'] }}
@@ -409,9 +417,14 @@ function BarcodeScannerModal({
           <ScanFallback />
         )}
 
-        <View className="absolute inset-0 bg-black/20 px-5 pb-8 pt-5">
+        <View className="absolute inset-0 z-10 bg-black/20 px-5 pb-8 pt-5" style={styles.scanOverlay}>
           <View className="flex-row items-center justify-between">
-            <Pressable className="h-10 w-10 items-center justify-center rounded-full bg-white/20" onPress={onClose}>
+            <Pressable
+              accessibilityLabel="Fechar scanner"
+              className="h-11 w-11 items-center justify-center rounded-full bg-white/25 active:opacity-80"
+              hitSlop={12}
+              onPress={onClose}
+            >
               <Text className="text-xl font-extrabold text-white">X</Text>
             </Pressable>
             <Text className="text-base font-extrabold text-white">Escanear produto</Text>
@@ -434,7 +447,7 @@ function BarcodeScannerModal({
         </View>
 
         {!permissionGranted ? (
-          <View className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white p-6">
+          <View className="absolute bottom-0 left-0 right-0 z-20 rounded-t-3xl bg-white p-6" style={styles.scanPanel}>
             <Text className="text-center text-lg font-extrabold text-ink">Camera sem permissao</Text>
             <Text className="mt-2 text-center text-sm leading-5 text-muted">
               Autorize a camera para ler o codigo de barras do produto.
@@ -446,7 +459,7 @@ function BarcodeScannerModal({
         ) : null}
 
         {barcode || isLoading || error || product ? (
-          <View className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-white p-6">
+          <View className="absolute bottom-0 left-0 right-0 z-20 rounded-t-3xl bg-white p-6" style={styles.scanPanel}>
             <View className="mx-auto mb-3 h-12 w-12 items-center justify-center rounded-full bg-green-50">
               <Text className="text-2xl font-extrabold text-success">{product ? 'V' : '...'}</Text>
             </View>
@@ -586,3 +599,12 @@ function normalizeText(value: string) {
     .toLowerCase()
     .trim();
 }
+
+const styles = StyleSheet.create({
+  scanOverlay: {
+    elevation: 10,
+  },
+  scanPanel: {
+    elevation: 20,
+  },
+});
