@@ -1,8 +1,9 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useFocusEffect } from '@react-navigation/native';
+import { BarcodeScanningResult, CameraView, useCameraPermissions } from 'expo-camera';
 import { useCallback, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { Alert, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 
 import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
@@ -27,7 +28,15 @@ export function ProductsScreen() {
   const [editingProduct, setEditingProduct] = useState<ShoppingProduct | null>(null);
   const [sefazError, setSefazError] = useState<string | null>(null);
   const [sefazProducts, setSefazProducts] = useState<SefazProductPrice[]>([]);
+  const [dismissedSefazProducts, setDismissedSefazProducts] = useState<string[]>([]);
+  const [isSefazModalVisible, setIsSefazModalVisible] = useState(false);
+  const [isScannerVisible, setIsScannerVisible] = useState(false);
+  const [scannedBarcode, setScannedBarcode] = useState<string | null>(null);
+  const [barcodeProduct, setBarcodeProduct] = useState<SefazProductPrice | null>(null);
+  const [barcodeError, setBarcodeError] = useState<string | null>(null);
+  const [isBarcodeLoading, setIsBarcodeLoading] = useState(false);
   const [isSefazLoading, setIsSefazLoading] = useState(false);
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const scrollViewRef = useRef<ScrollView>(null);
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -94,6 +103,8 @@ export function ProductsScreen() {
       setIsSefazLoading(true);
       const data = await sefazRepository.searchProducts(name);
       setSefazProducts(data.products);
+      setDismissedSefazProducts([]);
+      setIsSefazModalVisible(true);
     } catch {
       setSefazError('Nao foi possivel consultar produtos na SEFAZ agora.');
     } finally {
@@ -118,9 +129,61 @@ export function ProductsScreen() {
         quantity: 1,
         unit,
       });
+      setDismissedSefazProducts((current) => [...current, getSefazProductKey(sefazProduct)]);
       Alert.alert('Produto adicionado', `${name} foi adicionado a sua lista.`);
     } catch {
       // The store keeps the user-facing error message.
+    }
+  };
+
+  const dismissSefazProduct = (sefazProduct: SefazProductPrice) => {
+    setDismissedSefazProducts((current) => [...current, getSefazProductKey(sefazProduct)]);
+  };
+
+  const openScanner = async () => {
+    setBarcodeError(null);
+    setBarcodeProduct(null);
+    setScannedBarcode(null);
+
+    if (!cameraPermission?.granted) {
+      const permission = await requestCameraPermission();
+
+      if (!permission.granted) {
+        setBarcodeError('Permita o uso da camera para escanear o codigo de barras.');
+        setIsScannerVisible(true);
+        return;
+      }
+    }
+
+    setIsScannerVisible(true);
+  };
+
+  const handleBarcodeScanned = ({ data }: BarcodeScanningResult) => {
+    if (isBarcodeLoading || scannedBarcode) {
+      return;
+    }
+
+    setScannedBarcode(data);
+    lookupBarcode(data);
+  };
+
+  const lookupBarcode = async (code: string) => {
+    try {
+      setBarcodeError(null);
+      setBarcodeProduct(null);
+      setIsBarcodeLoading(true);
+      const data = await sefazRepository.searchProductByBarcode(code);
+
+      if (!data.product) {
+        setBarcodeError('A SEFAZ nao retornou produto com preco real valido para este codigo.');
+        return;
+      }
+
+      setBarcodeProduct(data.product);
+    } catch {
+      setBarcodeError('Nao foi possivel consultar este codigo de barras na SEFAZ agora.');
+    } finally {
+      setIsBarcodeLoading(false);
     }
   };
 
@@ -172,6 +235,12 @@ export function ProductsScreen() {
             variant="secondary"
             onPress={searchSefazProducts}
           />
+          <Button
+            isLoading={isBarcodeLoading}
+            title="Escanear codigo de barras"
+            variant="ghost"
+            onPress={openScanner}
+          />
           {editingProduct ? (
             <Button
               title="Cancelar edicao"
@@ -190,34 +259,6 @@ export function ProductsScreen() {
           </View>
         ) : null}
 
-        {sefazProducts.length > 0 ? (
-          <View className="mt-5 gap-3">
-            <Text className="text-xl font-extrabold text-ink">Precos reais da SEFAZ</Text>
-            {sefazProducts.slice(0, 8).map((product) => (
-              <View key={`${product.cnpj}-${product.productName}-${product.saleDate}`} className="rounded-2xl border border-line bg-white p-4">
-                <View className="gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <View className="min-w-0 flex-1">
-                    <Text className="text-base font-extrabold text-ink">{product.productName}</Text>
-                    <Text className="mt-1 text-sm text-muted">{product.marketName}</Text>
-                    <Text className="mt-1 text-xs text-slate-600">
-                      {product.neighborhood}, {product.city}
-                    </Text>
-                  </View>
-                  <View className="items-stretch gap-2 sm:items-end">
-                    <Text className="text-2xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
-                    <Button
-                      title="Adicionar a lista"
-                      variant="success"
-                      isLoading={isSaving}
-                      onPress={() => addSefazProductToList(product)}
-                    />
-                  </View>
-                </View>
-              </View>
-            ))}
-          </View>
-        ) : null}
-
         <View className="mt-5 gap-3">
           <Text className="text-xl font-extrabold text-ink">Sua lista ({products.length} itens)</Text>
           {products.length === 0 ? (
@@ -233,12 +274,211 @@ export function ProductsScreen() {
             ))
           )}
         </View>
+        <SefazResultsModal
+          dismissedProductKeys={dismissedSefazProducts}
+          isSaving={isSaving}
+          products={sefazProducts}
+          visible={isSefazModalVisible}
+          onAdd={addSefazProductToList}
+          onDismissProduct={dismissSefazProduct}
+          onClose={() => setIsSefazModalVisible(false)}
+        />
+        <BarcodeScannerModal
+          barcode={scannedBarcode}
+          error={barcodeError}
+          isLoading={isBarcodeLoading}
+          permissionGranted={Boolean(cameraPermission?.granted)}
+          product={barcodeProduct}
+          visible={isScannerVisible}
+          onAdd={addSefazProductToList}
+          onClose={() => setIsScannerVisible(false)}
+          onRequestPermission={requestCameraPermission}
+          onScan={handleBarcodeScanned}
+          onScanAgain={() => {
+            setScannedBarcode(null);
+            setBarcodeProduct(null);
+            setBarcodeError(null);
+          }}
+        />
     </ScreenContainer>
+  );
+}
+
+function SefazResultsModal({
+  dismissedProductKeys,
+  isSaving,
+  products,
+  visible,
+  onAdd,
+  onClose,
+  onDismissProduct,
+}: {
+  dismissedProductKeys: string[];
+  isSaving: boolean;
+  products: SefazProductPrice[];
+  visible: boolean;
+  onAdd: (product: SefazProductPrice) => void;
+  onClose: () => void;
+  onDismissProduct: (product: SefazProductPrice) => void;
+}) {
+  const visibleProducts = products
+    .filter((product) => !dismissedProductKeys.includes(getSefazProductKey(product)))
+    .slice(0, 12);
+
+  return (
+    <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
+      <View className="flex-1 justify-end bg-black/45">
+        <View className="max-h-[86%] rounded-t-3xl bg-sand p-5">
+          <View className="mb-4 flex-row items-start justify-between gap-4">
+            <View className="min-w-0 flex-1">
+              <Text className="text-2xl font-extrabold text-ink">Produtos encontrados</Text>
+              <Text className="mt-1 text-sm text-muted">Toque em V para adicionar ou X para remover da selecao.</Text>
+            </View>
+            <Pressable className="h-11 w-11 items-center justify-center rounded-xl border border-line bg-white" onPress={onClose}>
+              <Text className="text-lg font-extrabold text-ink">X</Text>
+            </Pressable>
+          </View>
+
+          <ScrollView contentContainerClassName="gap-3 pb-6">
+            {visibleProducts.length === 0 ? (
+              <Text className="rounded-2xl border border-line bg-white p-4 text-center text-sm text-muted">
+                Nenhum produto pendente nesta consulta.
+              </Text>
+            ) : (
+              visibleProducts.map((product) => (
+                <SefazProductResultCard
+                  key={getSefazProductKey(product)}
+                  isSaving={isSaving}
+                  product={product}
+                  onAdd={() => onAdd(product)}
+                  onDismiss={() => onDismissProduct(product)}
+                />
+              ))
+            )}
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function BarcodeScannerModal({
+  barcode,
+  error,
+  isLoading,
+  permissionGranted,
+  product,
+  visible,
+  onAdd,
+  onClose,
+  onRequestPermission,
+  onScan,
+  onScanAgain,
+}: {
+  barcode: string | null;
+  error: string | null;
+  isLoading: boolean;
+  permissionGranted: boolean;
+  product: SefazProductPrice | null;
+  visible: boolean;
+  onAdd: (product: SefazProductPrice) => void;
+  onClose: () => void;
+  onRequestPermission: () => void;
+  onScan: (result: BarcodeScanningResult) => void;
+  onScanAgain: () => void;
+}) {
+  return (
+    <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
+      <View className="flex-1 bg-black/70">
+        <View className="flex-1 p-5">
+          <View className="mb-4 flex-row items-center justify-between">
+            <Text className="text-2xl font-extrabold text-white">Escanear codigo</Text>
+            <Pressable className="h-11 w-11 items-center justify-center rounded-xl bg-white" onPress={onClose}>
+              <Text className="text-lg font-extrabold text-ink">X</Text>
+            </Pressable>
+          </View>
+
+          {permissionGranted ? (
+            <View className="overflow-hidden rounded-3xl border border-white/20">
+              <CameraView
+                className="h-80 w-full"
+                facing="back"
+                onBarcodeScanned={barcode ? undefined : onScan}
+                barcodeScannerSettings={{ barcodeTypes: ['ean13', 'ean8', 'upc_a', 'upc_e', 'code128'] }}
+              />
+            </View>
+          ) : (
+            <View className="rounded-3xl bg-white p-5">
+              <Text className="text-lg font-extrabold text-ink">Camera sem permissao</Text>
+              <Text className="mt-2 text-sm text-muted">Autorize a camera para ler o codigo de barras do produto.</Text>
+              <View className="mt-4">
+                <Button title="Permitir camera" variant="secondary" onPress={onRequestPermission} />
+              </View>
+            </View>
+          )}
+
+          <View className="mt-4 gap-3 rounded-3xl bg-sand p-5">
+            {barcode ? <Text className="text-xs font-bold uppercase text-muted">Codigo lido: {barcode}</Text> : null}
+            {isLoading ? <Text className="text-sm font-bold text-muted">Consultando SEFAZ...</Text> : null}
+            {error ? <Text className="text-sm font-bold text-red-700">{error}</Text> : null}
+            {product ? (
+              <>
+                <SefazProductResultCard product={product} isSaving={false} onAdd={() => onAdd(product)} onDismiss={onScanAgain} />
+                <Button title="Ler outro codigo" variant="ghost" onPress={onScanAgain} />
+              </>
+            ) : null}
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function SefazProductResultCard({
+  isSaving,
+  product,
+  onAdd,
+  onDismiss,
+}: {
+  isSaving: boolean;
+  product: SefazProductPrice;
+  onAdd: () => void;
+  onDismiss: () => void;
+}) {
+  return (
+    <View className="rounded-2xl border border-line bg-white p-4">
+      <View className="flex-row items-start gap-3">
+        <View className="min-w-0 flex-1">
+          <Text className="text-base font-extrabold text-ink">{normalizeSefazProductName(product)}</Text>
+          <Text className="mt-1 text-sm text-muted">{product.marketName}</Text>
+          <Text className="mt-1 text-xs text-muted">
+            {product.neighborhood}, {product.city}
+          </Text>
+          <Text className="mt-2 text-2xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
+        </View>
+        <View className="gap-2">
+          <Pressable
+            className="h-11 w-11 items-center justify-center rounded-xl bg-green-50 active:opacity-80"
+            disabled={isSaving}
+            onPress={onAdd}
+          >
+            <Text className="text-lg font-extrabold text-success">V</Text>
+          </Pressable>
+          <Pressable className="h-11 w-11 items-center justify-center rounded-xl bg-red-50 active:opacity-80" onPress={onDismiss}>
+            <Text className="text-lg font-extrabold text-red-700">X</Text>
+          </Pressable>
+        </View>
+      </View>
+    </View>
   );
 }
 
 function normalizeSefazProductName(product: SefazProductPrice) {
   return (product.sefazDescription || product.productName).trim();
+}
+
+function getSefazProductKey(product: SefazProductPrice) {
+  return `${product.cnpj}-${product.gtin ?? product.productName}-${product.saleDate}-${product.price}`;
 }
 
 function normalizeSefazUnit(unit: string): UnitType {

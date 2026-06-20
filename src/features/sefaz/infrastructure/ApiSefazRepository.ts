@@ -9,6 +9,16 @@ export class ApiSefazRepository {
     );
   }
 
+  searchProductByBarcode(code: string) {
+    return apiRequest<{
+      source: 'sefaz';
+      cityIbgeCode: number;
+      barcode: string;
+      product: SefazProductPrice | null;
+      products: SefazProductPrice[];
+    }>(`/sefaz/products/barcode/${encodeURIComponent(code)}`, { authenticated: true });
+  }
+
   getCurrentFuelPrice() {
     return apiRequest<SefazFuelSummary>('/sefaz/fuel/current', { authenticated: true });
   }
