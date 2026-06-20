@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Text, View } from 'react-native';
+import type { ReactNode } from 'react';
+import { Modal, Pressable, Text, View } from 'react-native';
 
 import { MapHtmlView } from '@/features/map/presentation/MapHtmlView';
 import { apiRequest } from '@/shared/api/apiClient';
@@ -30,6 +31,8 @@ export function RouteMapPreview({
   const targetMarket = market?.location.latitude !== 0 && market?.location.longitude !== 0 ? market : undefined;
   const [route, setRoute] = useState<RouteResponse | null>(null);
   const [routeError, setRouteError] = useState<string | null>(null);
+  const [isExpandedMapVisible, setIsExpandedMapVisible] = useState(false);
+  const [mapResetVersion, setMapResetVersion] = useState(0);
   const routeConditions = targetMarket?.routeConditions ?? [];
 
   useEffect(() => {
@@ -68,8 +71,8 @@ export function RouteMapPreview({
   }, [currentLocation, targetMarket]);
 
   const html = useMemo(
-    () => buildLeafletHtml(currentLocation, targetMarket, route, recommendations),
-    [currentLocation, recommendations, route, targetMarket],
+    () => buildLeafletHtml(currentLocation, targetMarket, route, recommendations, mapResetVersion),
+    [currentLocation, mapResetVersion, recommendations, route, targetMarket],
   );
 
   return (
@@ -82,9 +85,24 @@ export function RouteMapPreview({
         {targetMarket ? <Text className="text-sm font-extrabold text-primary">{formatDistance(targetMarket.distanceKm)}</Text> : null}
       </View>
 
-      <View className="mt-4 h-80 overflow-hidden rounded-2xl border border-line">
+      <View className="relative mt-4 h-80 overflow-hidden rounded-2xl border border-line">
         <MapHtmlView html={html} />
+        <View className="absolute right-3 top-3 gap-2">
+          <MapControlButton accessibilityLabel="Expandir mapa" onPress={() => setIsExpandedMapVisible(true)}>
+            <ExpandIcon />
+          </MapControlButton>
+          <MapControlButton accessibilityLabel="Centralizar na sua localizacao" onPress={() => setMapResetVersion((current) => current + 1)}>
+            <LocationTargetIcon />
+          </MapControlButton>
+        </View>
       </View>
+
+      <ExpandedMapModal
+        html={html}
+        visible={isExpandedMapVisible}
+        onClose={() => setIsExpandedMapVisible(false)}
+        onRecenter={() => setMapResetVersion((current) => current + 1)}
+      />
 
       <View className="mt-3 gap-2">
         <View className="flex-row flex-wrap justify-between gap-x-3 gap-y-1">
@@ -121,6 +139,87 @@ export function RouteMapPreview({
   );
 }
 
+function ExpandedMapModal({
+  html,
+  visible,
+  onClose,
+  onRecenter,
+}: {
+  html: string;
+  visible: boolean;
+  onClose: () => void;
+  onRecenter: () => void;
+}) {
+  return (
+    <Modal animationType="slide" presentationStyle="fullScreen" visible={visible} onRequestClose={onClose}>
+      <View className="flex-1 bg-white">
+        <View className="flex-row items-center justify-between border-b border-line bg-white px-4 pb-3 pt-12">
+          <Text className="text-base font-extrabold text-ink">Mapa da rota</Text>
+          <Pressable
+            accessibilityLabel="Fechar mapa expandido"
+            className="h-11 w-11 items-center justify-center rounded-xl bg-primary active:opacity-80"
+            onPress={onClose}
+          >
+            <Text className="text-lg font-extrabold text-white">X</Text>
+          </Pressable>
+        </View>
+        <View className="relative flex-1">
+          <MapHtmlView html={html} />
+          <View className="absolute right-4 top-4">
+            <MapControlButton accessibilityLabel="Centralizar na sua localizacao" onPress={onRecenter}>
+              <LocationTargetIcon />
+            </MapControlButton>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function MapControlButton({
+  accessibilityLabel,
+  children,
+  onPress,
+}: {
+  accessibilityLabel: string;
+  children: ReactNode;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityLabel={accessibilityLabel}
+      className="h-11 w-11 items-center justify-center rounded-xl border border-line bg-white/95 active:opacity-80"
+      onPress={onPress}
+    >
+      {children}
+    </Pressable>
+  );
+}
+
+function ExpandIcon() {
+  return (
+    <View className="h-5 w-5">
+      <View className="absolute left-0 top-0 h-2 w-2 border-l-2 border-t-2 border-secondary" />
+      <View className="absolute right-0 top-0 h-2 w-2 border-r-2 border-t-2 border-secondary" />
+      <View className="absolute bottom-0 left-0 h-2 w-2 border-b-2 border-l-2 border-secondary" />
+      <View className="absolute bottom-0 right-0 h-2 w-2 border-b-2 border-r-2 border-secondary" />
+    </View>
+  );
+}
+
+function LocationTargetIcon() {
+  return (
+    <View className="h-5 w-5 items-center justify-center">
+      <View className="h-4 w-4 rounded-full border-2 border-secondary" />
+      <View className="absolute h-1.5 w-1.5 rounded-full bg-secondary" />
+      <View className="absolute -top-0.5 h-1.5 w-0.5 rounded-full bg-secondary" />
+      <View className="absolute -bottom-0.5 h-1.5 w-0.5 rounded-full bg-secondary" />
+      <View className="absolute -left-0.5 h-0.5 w-1.5 rounded-full bg-secondary" />
+      <View className="absolute -right-0.5 h-0.5 w-1.5 rounded-full bg-secondary" />
+    </View>
+  );
+}
+
 function getRouteSourceLabel(source?: RouteResponse['source'], routeError?: string | null) {
   if (routeError) {
     return 'Rota indisponivel';
@@ -138,6 +237,7 @@ function buildLeafletHtml(
   targetMarket?: Market,
   route?: RouteResponse | null,
   recommendations: Recommendation[] = [],
+  mapResetVersion = 0,
 ) {
   const destination = targetMarket?.location ?? currentLocation;
   const establishmentMarkers = recommendations
@@ -170,6 +270,7 @@ function buildLeafletHtml(
 <!doctype html>
 <html>
   <head>
+    <!-- reset:${mapResetVersion} -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <link
       rel="stylesheet"
