@@ -5,6 +5,7 @@ import { formatCurrency, formatDistance } from '@/shared/utils/formatters';
 
 export function RecommendationCard({ recommendation }: { recommendation: Recommendation }) {
   const routeConditions = recommendation.routeConditions ?? [];
+  const hasMissingProducts = recommendation.missingProducts.length > 0;
 
   return (
     <View
@@ -27,7 +28,11 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
         <Row label="Impacto do percurso" value={`${formatCurrency(recommendation.routeImpactCost ?? 0)} (${Math.round((recommendation.routeImpactPercent ?? 0) * 100)}%)`} />
         <Row label="Combustivel ajustado" value={formatCurrency(recommendation.displacementCost)} />
         <View className="h-px bg-slate-200" />
-        <Row isStrong label="Total final" value={formatCurrency(recommendation.finalTotal)} />
+        <Row
+          isStrong
+          label={hasMissingProducts ? 'Total parcial' : 'Total final'}
+          value={formatCurrency(recommendation.finalTotal)}
+        />
         {!recommendation.isBest ? <Row label="Diferenca para o melhor" value={formatCurrency(recommendation.estimatedSavings)} /> : null}
       </View>
 
@@ -44,10 +49,13 @@ export function RecommendationCard({ recommendation }: { recommendation: Recomme
         <Text className="mt-3 text-xs text-emerald-700">Percurso sem impactos mockados no momento.</Text>
       )}
 
-      {recommendation.missingProducts.length > 0 ? (
-        <Text className="mt-3 text-xs text-red-700">
-          Itens indisponiveis: {recommendation.missingProducts.map((product) => product.name).join(', ')}
-        </Text>
+      {hasMissingProducts ? (
+        <View className="mt-3 rounded-md bg-red-50 p-3">
+          <Text className="text-xs font-bold text-red-800">Total parcial, nao compara a lista completa</Text>
+          <Text className="mt-1 text-xs text-red-700">
+            Itens indisponiveis: {recommendation.missingProducts.map((product) => product.name).join(', ')}
+          </Text>
+        </View>
       ) : null}
     </View>
   );
