@@ -5,13 +5,18 @@ import { formatDistance } from '@/shared/utils/formatters';
 
 export function MarketCard({ market }: { market: Market }) {
   return (
-    <View className="rounded-lg border border-slate-200 bg-white p-4">
-      <View className="flex-row items-center justify-between gap-3">
-        <Text className="flex-1 text-base font-semibold text-ink">{market.name}</Text>
-        <Text className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold uppercase text-primary">{market.type}</Text>
+    <View className="rounded-2xl border border-line bg-white p-4">
+      <View className="flex-row items-center gap-3">
+        <View className="h-11 w-11 items-center justify-center rounded-xl bg-green-50">
+          <Text className="text-lg font-extrabold text-success">M</Text>
+        </View>
+        <View className="min-w-0 flex-1">
+          <Text className="text-base font-extrabold text-ink">{market.name}</Text>
+          <Text className="mt-1 text-sm text-muted">{market.neighborhood}, {market.city}</Text>
+        </View>
+        <Text className="text-sm font-extrabold text-primary">{formatDistance(market.distanceKm)}</Text>
       </View>
-      <Text className="mt-2 text-sm text-muted">{market.address}</Text>
-      <Text className="mt-2 text-sm font-semibold text-slate-700">{formatDistance(market.distanceKm)} de distancia</Text>
+      <Text className="mt-3 text-sm text-muted">{market.address}</Text>
     </View>
   );
 }

@@ -33,38 +33,61 @@ export function HomeScreen() {
     <ScreenContainer onRefresh={reloadScreen}>
       <Header title={`Ola, ${user?.name?.split(' ')[0] ?? 'comprador'}`} subtitle="Resumo do seu planejamento de compra em Alagoas." />
 
-      <View className="gap-3">
-        <Card>
-          <Text className="text-sm text-muted">Melhor opcao agora</Text>
-          <Text className="mt-1 text-xl font-bold text-ink">{best?.market.name ?? 'Adicione produtos'}</Text>
-          <Text className="mt-2 text-sm text-slate-700">
-            {best ? `Total estimado: ${formatCurrency(best.finalTotal)}` : 'Monte sua lista para receber uma recomendacao.'}
+      <View className="gap-4">
+        <View className="overflow-hidden rounded-3xl bg-primary p-6">
+          <Text className="self-start rounded-full bg-amber-700 px-3 py-1 text-xs font-extrabold uppercase text-white">
+            Recomendacao de hoje
           </Text>
-        </Card>
-
-        <View className="gap-3 sm:flex-row">
-          <Card className="flex-1">
-            <Text className="text-sm text-muted">Produtos</Text>
-            <Text className="mt-2 text-2xl font-bold text-ink">{products.length}</Text>
-          </Card>
-          <Card className="flex-1">
-            <Text className="text-sm text-muted">Veiculo</Text>
-            <Text className="mt-2 text-base font-bold text-ink">{vehicle ? formatFuelConsumption(vehicle.averageConsumptionKmPerLiter) : 'Pendente'}</Text>
-          </Card>
+          <Text className="mt-4 text-2xl font-extrabold leading-8 text-white">
+            {best ? `${best.market.name} sai por ${formatCurrency(best.finalTotal)}` : 'Monte sua lista para comparar'}
+          </Text>
+          <Text className="mt-2 max-w-xl text-sm leading-5 text-white/85">
+            {best
+              ? `Economia estimada considerando produtos, combustivel e ida e volta.`
+              : 'Adicione produtos e cadastre seu veiculo para descobrir o menor custo total.'}
+          </Text>
+          <View className="mt-5 self-start rounded-xl bg-white px-4 py-2">
+            <Text className="text-sm font-extrabold text-primary">Ver comparacao completa</Text>
+          </View>
         </View>
 
-        <Card>
-          <Text className="text-sm text-muted">Combustivel</Text>
-          <Text className="mt-2 text-lg font-bold text-ink">
-            {vehicle ? `${vehicle.fuelType} - ${formatCurrency(vehicle.fuelPricePerLiter)}/l` : 'Cadastre seu veiculo'}
-          </Text>
-        </Card>
+        <View className="flex-row rounded-2xl border border-line bg-white p-4">
+          <Stat label="Veiculo" value={vehicle ? formatFuelConsumption(vehicle.averageConsumptionKmPerLiter) : 'Pendente'} />
+          <Divider />
+          <Stat label="Combustivel" value={vehicle ? `${formatCurrency(vehicle.fuelPricePerLiter)}/l` : 'Pendente'} />
+          <Divider />
+          <Stat label="Itens" value={`${products.length}`} />
+        </View>
 
-        <Header title="Mercados monitorados" />
-        {recommendations.slice(0, 3).map((recommendation) => (
-          <MarketCard key={recommendation.market.id} market={recommendation.market} />
-        ))}
+        <View>
+          <Text className="mb-3 text-xl font-extrabold text-ink">Mercados monitorados</Text>
+          {recommendations.length === 0 ? (
+            <Card>
+              <Text className="text-sm leading-5 text-muted">
+                Quando houver produtos, GPS e retorno da SEFAZ, os estabelecimentos reais aparecem aqui.
+              </Text>
+            </Card>
+          ) : null}
+          <View className="gap-3">
+            {recommendations.slice(0, 3).map((recommendation) => (
+              <MarketCard key={recommendation.market.id} market={recommendation.market} />
+            ))}
+          </View>
+        </View>
       </View>
     </ScreenContainer>
   );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <View className="min-w-0 flex-1 items-center px-2">
+      <Text className="text-center text-[10px] font-bold uppercase tracking-wide text-muted">{label}</Text>
+      <Text className="mt-1 text-center text-sm font-extrabold text-ink">{value}</Text>
+    </View>
+  );
+}
+
+function Divider() {
+  return <View className="h-9 w-px bg-line" />;
 }

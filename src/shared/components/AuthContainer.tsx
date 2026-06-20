@@ -24,11 +24,11 @@ export function AuthContainer({ children, onRefresh }: AuthContainerProps) {
   }, [onRefresh]);
 
   return (
-    <KeyboardAvoidingView className="flex-1 bg-slate-50" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView className="flex-1 bg-sand" behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
         contentContainerClassName="flex-grow justify-center px-4 py-8 sm:px-5"
         refreshControl={
-          onRefresh ? <RefreshControl refreshing={isRefreshing} tintColor="#0f766e" onRefresh={handleRefresh} /> : undefined
+          onRefresh ? <RefreshControl refreshing={isRefreshing} tintColor="#D62839" onRefresh={handleRefresh} /> : undefined
         }
       >
         <View className="w-full self-center md:max-w-md">{children}</View>

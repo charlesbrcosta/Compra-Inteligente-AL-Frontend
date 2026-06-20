@@ -26,12 +26,12 @@ export function ScreenContainer({ children, onRefresh, scrollViewRef }: ScreenCo
   }, [onRefresh]);
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50">
+    <SafeAreaView className="flex-1 bg-sand">
       <ScrollView
         ref={scrollViewRef}
-        contentContainerClassName="px-4 py-5 pb-8 sm:px-5"
+        contentContainerClassName="px-4 py-5 pb-10 sm:px-5"
         refreshControl={
-          onRefresh ? <RefreshControl refreshing={isRefreshing} tintColor="#0f766e" onRefresh={handleRefresh} /> : undefined
+          onRefresh ? <RefreshControl refreshing={isRefreshing} tintColor="#D62839" onRefresh={handleRefresh} /> : undefined
         }
       >
         <View className="w-full self-center md:max-w-3xl lg:max-w-4xl">{children}</View>

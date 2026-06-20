@@ -5,12 +5,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: '#0f766e',
-        secondary: '#2563eb',
-        accent: '#f59e0b',
+        primary: '#D62839',
+        secondary: '#2563A8',
+        accent: '#F2A93B',
+        success: '#2F8F5B',
+        sand: '#FFF8EE',
+        line: '#F0DFC9',
         surface: '#ffffff',
-        muted: '#64748b',
-        ink: '#0f172a',
+        muted: '#8A736A',
+        ink: '#2B1B16',
       },
     },
   },

@@ -73,16 +73,16 @@ export function RouteMapPreview({
   );
 
   return (
-    <View className="rounded-lg border border-slate-200 bg-white p-4">
+    <View className="rounded-2xl border border-line bg-white p-4">
       <View className="gap-1 sm:flex-row sm:items-center sm:justify-between">
         <View className="min-w-0 flex-1">
-          <Text className="text-base font-bold text-ink">Mapa interativo da rota</Text>
+          <Text className="text-base font-extrabold text-ink">Mapa interativo da rota</Text>
           <Text className="mt-1 text-xs text-muted">OpenStreetMap com zoom, pan e rota do mercado recomendado.</Text>
         </View>
-        {targetMarket ? <Text className="text-sm font-semibold text-primary">{formatDistance(targetMarket.distanceKm)}</Text> : null}
+        {targetMarket ? <Text className="text-sm font-extrabold text-primary">{formatDistance(targetMarket.distanceKm)}</Text> : null}
       </View>
 
-      <View className="mt-4 h-80 overflow-hidden rounded-lg border border-slate-200">
+      <View className="mt-4 h-80 overflow-hidden rounded-2xl border border-line">
         <MapHtmlView html={html} />
       </View>
 

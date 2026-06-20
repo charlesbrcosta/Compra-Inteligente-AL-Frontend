@@ -10,20 +10,20 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onEdit, onRemove }: ProductCardProps) {
   return (
-    <View className="rounded-lg border border-slate-200 bg-white p-4">
-      <View className="gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <View className="rounded-2xl border border-line bg-white p-4">
+      <View className="flex-row items-center justify-between gap-3">
         <View className="min-w-0 flex-1">
-          <Text className="text-base font-semibold text-ink">{product.name}</Text>
-          <Text className="mt-1 text-sm text-muted">
+          <Text className="text-base font-extrabold text-ink">{product.name}</Text>
+          <Text className="mt-1 text-sm font-semibold text-muted">
             {product.quantity} {product.unit}
           </Text>
         </View>
         <View className="flex-row gap-2">
-          <Pressable className="min-h-10 flex-1 items-center justify-center rounded-lg bg-slate-100 px-3 py-2 active:opacity-80 sm:flex-none" onPress={onEdit}>
-            <Text className="text-sm font-semibold text-ink">Editar</Text>
+          <Pressable className="h-10 w-10 items-center justify-center rounded-xl border border-line bg-white active:opacity-80" onPress={onEdit}>
+            <Text className="text-base font-extrabold text-ink">E</Text>
           </Pressable>
-          <Pressable className="min-h-10 flex-1 items-center justify-center rounded-lg bg-red-50 px-3 py-2 active:opacity-80 sm:flex-none" onPress={onRemove}>
-            <Text className="text-sm font-semibold text-red-700">Remover</Text>
+          <Pressable className="h-10 w-10 items-center justify-center rounded-xl border border-red-100 bg-red-50 active:opacity-80" onPress={onRemove}>
+            <Text className="text-base font-extrabold text-red-700">X</Text>
           </Pressable>
         </View>
       </View>

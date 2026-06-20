@@ -38,14 +38,14 @@ export function RecommendationHistoryScreen() {
               const best = entry.recommendations.find((recommendation) => recommendation.isBest);
 
               return (
-                <View key={entry.id} className="rounded-lg border border-slate-200 bg-white p-4">
-                  <Text className="text-xs font-semibold uppercase text-muted">
+                <View key={entry.id} className="rounded-2xl border border-line bg-white p-5">
+                  <Text className="text-xs font-extrabold uppercase tracking-wide text-muted">
                     {new Date(entry.createdAt).toLocaleString('pt-BR')}
                   </Text>
-                  <Text className="mt-2 text-base font-bold text-ink">
+                  <Text className="mt-2 text-lg font-extrabold text-ink">
                     {best?.market.name ?? 'Mercado nao identificado'}
                   </Text>
-                  <Text className="mt-1 text-sm text-muted">
+                  <Text className="mt-2 text-sm font-semibold text-success">
                     Total recomendado: {formatCurrency(best?.finalTotal ?? 0)}
                   </Text>
                   <Text className="mt-2 text-xs text-slate-600">

@@ -132,7 +132,7 @@ export function ProductsScreen() {
     <ScreenContainer onRefresh={reloadScreen} scrollViewRef={scrollViewRef}>
         <Header title="Lista de compras" subtitle="Informe quantidade e unidade para consultar produtos reais na SEFAZ." />
         {error ? (
-          <View className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3">
+          <View className="mb-4 rounded-2xl border border-red-200 bg-red-50 p-4">
             <View className="flex-row items-center justify-between gap-3">
               <Text className="flex-1 text-sm font-semibold text-red-700">{error}</Text>
               <Text className="text-sm font-bold text-red-700" onPress={clearError}>
@@ -142,10 +142,13 @@ export function ProductsScreen() {
           </View>
         ) : null}
         <Card className="gap-4">
+          <Text className="text-xs font-extrabold uppercase tracking-wide text-muted">
+            {editingProduct ? 'Editar item' : 'Adicionar item'}
+          </Text>
           {editingProduct ? (
-            <View className="rounded-lg border border-teal-200 bg-teal-50 p-3">
-              <Text className="text-sm font-bold text-teal-900">Editando produto</Text>
-              <Text className="mt-1 text-xs text-teal-800">{editingProduct.name}</Text>
+            <View className="rounded-2xl border border-green-100 bg-green-50 p-3">
+              <Text className="text-sm font-bold text-green-900">Editando produto</Text>
+              <Text className="mt-1 text-xs text-green-800">{editingProduct.name}</Text>
             </View>
           ) : null}
           <Controller control={form.control} name="name" render={({ field, fieldState }) => <Input label="Produto" placeholder="Ex: Arroz parboilizado" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
@@ -181,26 +184,26 @@ export function ProductsScreen() {
         </Card>
 
         {sefazError ? (
-          <View className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3">
+          <View className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-4">
             <Text className="text-sm font-semibold text-red-700">{sefazError}</Text>
           </View>
         ) : null}
 
         {sefazProducts.length > 0 ? (
           <View className="mt-5 gap-3">
-            <Text className="text-lg font-bold text-ink">Precos reais da SEFAZ</Text>
+            <Text className="text-xl font-extrabold text-ink">Precos reais da SEFAZ</Text>
             {sefazProducts.slice(0, 8).map((product) => (
-              <View key={`${product.cnpj}-${product.productName}-${product.saleDate}`} className="rounded-lg border border-slate-200 bg-white p-4">
+              <View key={`${product.cnpj}-${product.productName}-${product.saleDate}`} className="rounded-2xl border border-line bg-white p-4">
                 <View className="gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <View className="min-w-0 flex-1">
-                    <Text className="text-base font-bold text-ink">{product.productName}</Text>
+                    <Text className="text-base font-extrabold text-ink">{product.productName}</Text>
                     <Text className="mt-1 text-sm text-muted">{product.marketName}</Text>
                     <Text className="mt-1 text-xs text-slate-600">
                       {product.neighborhood}, {product.city}
                     </Text>
                   </View>
                   <View className="items-stretch gap-2 sm:items-end">
-                    <Text className="text-lg font-bold text-primary">{formatCurrency(product.price)}</Text>
+                    <Text className="text-2xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
                     <Button
                       title="Adicionar a lista"
                       variant="secondary"
@@ -215,7 +218,7 @@ export function ProductsScreen() {
         ) : null}
 
         <View className="mt-5 gap-3">
-          <Text className="text-lg font-bold text-ink">Produtos cadastrados</Text>
+          <Text className="text-xl font-extrabold text-ink">Sua lista ({products.length} itens)</Text>
           {products.length === 0 ? (
             <EmptyState title="Sua lista esta vazia" description="Adicione itens para calcular o melhor mercado." />
           ) : (

@@ -11,8 +11,8 @@ export function RouteImpactsScreen() {
           subtitle="Status das variaveis externas que podem alterar o custo de deslocamento."
         />
 
-        <View className="gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
-          <Text className="text-base font-bold text-amber-950">Integracao de transito pendente</Text>
+        <View className="gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+          <Text className="text-lg font-extrabold text-amber-950">Integracao de transito pendente</Text>
           <Text className="text-sm leading-6 text-amber-900">
             O app ja calcula a rota real por ruas e a distancia real entre o GPS do usuario e os estabelecimentos.
             Acidentes, chuva, bloqueios e congestionamentos nao entram no calculo enquanto nao houver uma API real

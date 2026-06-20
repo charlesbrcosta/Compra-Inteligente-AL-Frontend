@@ -1,11 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Controller, useForm } from 'react-hook-form';
+import { Text, View } from 'react-native';
 
 import { AuthContainer } from '@/shared/components/AuthContainer';
+import { BrandLockup } from '@/shared/components/BrandMark';
 import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
-import { Header } from '@/shared/components/Header';
 import { Input } from '@/shared/components/Input';
 import { createId } from '@/shared/utils/id';
 import { AuthStackParamList } from '@/shared/types/navigation';
@@ -36,7 +37,15 @@ export function RegisterScreen({ navigation }: Props) {
 
   return (
     <AuthContainer onRefresh={() => form.reset({ name: '', email: '', city: 'Maceio', neighborhood: '', password: '' })}>
-      <Header title="Criar cadastro" subtitle="Seus dados ajudam a simular mercados e deslocamentos mais proximos." />
+      <View className="mb-8 gap-5">
+        <BrandLockup />
+        <View>
+          <Text className="text-4xl font-extrabold leading-10 text-ink">Crie sua conta.</Text>
+          <Text className="mt-3 text-base leading-6 text-muted">
+            Seus dados ajudam o app a calcular mercados, rotas e custo total com mais precisao.
+          </Text>
+        </View>
+      </View>
       <Card className="gap-4">
         <Controller control={form.control} name="name" render={({ field, fieldState }) => <Input label="Nome" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
         <Controller control={form.control} name="email" render={({ field, fieldState }) => <Input autoCapitalize="none" keyboardType="email-address" label="E-mail" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />

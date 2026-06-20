@@ -4,9 +4,9 @@ import { Controller, useForm } from 'react-hook-form';
 import { Text, View } from 'react-native';
 
 import { AuthContainer } from '@/shared/components/AuthContainer';
+import { BrandLockup } from '@/shared/components/BrandMark';
 import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
-import { Header } from '@/shared/components/Header';
 import { Input } from '@/shared/components/Input';
 import { AuthStackParamList } from '@/shared/types/navigation';
 import { useAuthStore } from '@/features/auth/store/authStore';
@@ -27,7 +27,16 @@ export function LoginScreen({ navigation }: Props) {
 
   return (
     <AuthContainer onRefresh={() => form.reset({ email: 'ana@email.com', password: '1234' })}>
-      <Header title="Compra Inteligente AL" subtitle="Compare produtos e deslocamento antes de sair para comprar." />
+      <View className="mb-8 gap-5">
+        <BrandLockup />
+        <View>
+          <Text className="text-4xl font-extrabold leading-10 text-ink">Sua compra, mais economica.</Text>
+          <Text className="mt-3 text-base leading-6 text-muted">
+            Compare precos reais e custo de deslocamento antes de sair de casa.
+          </Text>
+        </View>
+      </View>
+
       <Card className="gap-4">
         <Controller
           control={form.control}
@@ -59,7 +68,7 @@ export function LoginScreen({ navigation }: Props) {
           )}
         />
         <Button title="Entrar" onPress={onSubmit} isLoading={form.formState.isSubmitting} />
-        <Button title="Criar cadastro" variant="ghost" onPress={() => navigation.navigate('Register')} />
+        <Button title="Criar cadastro" variant="secondary" onPress={() => navigation.navigate('Register')} />
       </Card>
       <View className="mt-4">
         <Text className="text-center text-xs text-muted">Use um e-mail cadastrado para iniciar uma sessao local no app.</Text>

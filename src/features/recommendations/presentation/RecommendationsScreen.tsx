@@ -15,6 +15,7 @@ import { Loading } from '@/shared/components/Loading';
 import { RecommendationCard } from '@/shared/components/RecommendationCard';
 import { ScreenContainer } from '@/shared/components/ScreenContainer';
 import { GeoLocation, Recommendation } from '@/shared/types/entities';
+import { formatCurrency } from '@/shared/utils/formatters';
 
 type MarketFilter = 'all' | 'city' | 'neighborhood';
 
@@ -110,11 +111,11 @@ export function RecommendationsScreen() {
     <ScreenContainer onRefresh={reloadScreen}>
       <Header
         title="Recomendacao"
-        subtitle="Produtos, combustivel, impactos do percurso e filtros por localidade."
+        subtitle="Produtos, combustivel, rota real e filtros por localidade."
       />
 
-      <View className="gap-3">
-        <View className="flex-row flex-wrap gap-2">
+      <View className="gap-4">
+        <View className="flex-row gap-2">
           <FilterButton isActive={filter === 'all'} label="Todos" onPress={() => setFilter('all')} />
           <FilterButton isActive={filter === 'city'} label="Cidade" onPress={() => setFilter('city')} />
           <FilterButton isActive={filter === 'neighborhood'} label="Bairro" onPress={() => setFilter('neighborhood')} />
@@ -140,7 +141,7 @@ export function RecommendationsScreen() {
         )}
 
         {error ? (
-          <View className="rounded-lg border border-red-200 bg-red-50 p-3">
+          <View className="rounded-2xl border border-red-200 bg-red-50 p-4">
             <Text className="text-sm font-semibold text-red-700">{error}</Text>
           </View>
         ) : null}
@@ -153,9 +154,12 @@ export function RecommendationsScreen() {
             onShowAll={() => setFilter('all')}
           />
         ) : (
-          visibleRecommendations.map((recommendation) => (
-            <RecommendationCard key={recommendation.market.id} recommendation={recommendation} />
-          ))
+          <>
+            <CostGauge recommendations={visibleRecommendations} />
+            {visibleRecommendations.map((recommendation) => (
+              <RecommendationCard key={recommendation.market.id} recommendation={recommendation} />
+            ))}
+          </>
         )}
       </View>
     </ScreenContainer>
@@ -191,7 +195,7 @@ function RecommendationEmptyState({
 
 function LocationReadyEmptyMap({ description }: { description: string }) {
   return (
-    <View className="relative overflow-hidden rounded-lg border border-slate-200 bg-slate-200">
+    <View className="relative overflow-hidden rounded-2xl border border-line bg-slate-200">
       <View className="h-80 opacity-35">
         <View className="h-full w-full bg-slate-300">
           <View className="absolute left-8 top-10 h-20 w-40 rounded-full border-4 border-slate-400" />
@@ -201,7 +205,7 @@ function LocationReadyEmptyMap({ description }: { description: string }) {
         </View>
       </View>
       <View className="absolute inset-0 items-center justify-center bg-white/75 p-5">
-        <View className="w-full max-w-sm gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+        <View className="w-full max-w-sm gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
           <Text className="text-center text-base font-bold text-emerald-950">GPS ativo</Text>
           <Text className="text-center text-sm text-emerald-900">{description}</Text>
         </View>
@@ -222,7 +226,7 @@ function GpsRequiredMapOverlay({
   onOpenSettings: () => void;
 }) {
   return (
-    <View className="relative overflow-hidden rounded-lg border border-slate-200 bg-slate-200">
+    <View className="relative overflow-hidden rounded-2xl border border-line bg-slate-200">
       <View className="h-80 opacity-35">
         <View className="h-full w-full bg-slate-300">
           <View className="absolute left-8 top-10 h-20 w-40 rounded-full border-4 border-slate-400" />
@@ -232,7 +236,7 @@ function GpsRequiredMapOverlay({
         </View>
       </View>
       <View className="absolute inset-0 items-center justify-center bg-white/75 p-5">
-        <View className="w-full max-w-sm gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+        <View className="w-full max-w-sm gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
           <Text className="text-center text-base font-bold text-amber-950">GPS necessario</Text>
           <Text className="text-center text-sm text-amber-900">{message}</Text>
           <Button title="Ativar GPS" isLoading={isLocating} onPress={onEnableGps} />
@@ -293,12 +297,53 @@ function toRadians(value: number) {
 function FilterButton({ isActive, label, onPress }: { isActive: boolean; label: string; onPress: () => void }) {
   return (
     <Pressable
-      className={`min-h-10 min-w-24 flex-1 items-center justify-center rounded-lg border px-3 ${
-        isActive ? 'border-primary bg-primary' : 'border-slate-200 bg-white'
+      className={`min-h-11 min-w-24 flex-1 items-center justify-center rounded-xl border px-3 ${
+        isActive ? 'border-primary bg-primary' : 'border-line bg-white'
       }`}
       onPress={onPress}
     >
       <Text className={`text-sm font-bold ${isActive ? 'text-white' : 'text-slate-700'}`}>{label}</Text>
     </Pressable>
+  );
+}
+
+function CostGauge({ recommendations }: { recommendations: Recommendation[] }) {
+  const costs = recommendations.map((recommendation) => recommendation.finalTotal);
+  const min = Math.min(...costs);
+  const max = Math.max(...costs);
+  const best = recommendations[0];
+  const worst = recommendations[recommendations.length - 1];
+  const savings = worst && best ? Math.max(0, worst.finalTotal - best.finalTotal) : 0;
+
+  if (!best) {
+    return null;
+  }
+
+  return (
+    <View className="rounded-2xl border border-line bg-white p-5">
+      <Text className="text-xs font-extrabold uppercase tracking-wide text-muted">Comparativo de custo total</Text>
+      <View className="mt-5 h-2 justify-center rounded-full bg-sand">
+        <View className="h-2 rounded-full bg-ink/10" />
+        {recommendations.slice(0, 4).map((recommendation) => {
+          const position = max === min ? 0 : ((recommendation.finalTotal - min) / (max - min)) * 100;
+          const isBest = recommendation.market.id === best.market.id;
+
+          return (
+            <View
+              key={recommendation.market.id}
+              className="absolute top-1/2 -mt-2 h-4 w-4 rounded-full border-2 border-white"
+              style={{ left: `${Math.min(96, Math.max(0, position))}%`, backgroundColor: isBest ? '#2F8F5B' : '#B9AFA2' }}
+            />
+          );
+        })}
+      </View>
+      <View className="mt-5 flex-row items-start justify-between gap-3">
+        <View className="min-w-0 flex-1">
+          <Text className="text-sm font-extrabold text-ink" numberOfLines={1}>{best.market.name}</Text>
+          <Text className="mt-1 text-xs text-muted">menor custo total</Text>
+        </View>
+        <Text className="text-right text-sm font-extrabold text-success">economia de {formatCurrency(savings)}</Text>
+      </View>
+    </View>
   );
 }
