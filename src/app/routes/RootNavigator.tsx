@@ -62,7 +62,7 @@ function AppNavigator() {
         <View className="min-w-0 flex-1 flex-row items-center gap-3">
           <BrandMark compact />
           <View className="min-w-0 flex-1">
-            <Text className="text-[11px] font-extrabold uppercase tracking-wider text-primary">Compra Inteligente AL</Text>
+            <Text className="text-sm font-black uppercase tracking-wider text-primary">Compra Inteligente AL</Text>
             <Text className="text-2xl font-extrabold text-ink">{route.title}</Text>
           </View>
         </View>

@@ -356,11 +356,11 @@ export function ProductsScreen() {
               />
               <View className="gap-2 sm:flex-row">
                 <Pressable
-                  className="min-h-12 flex-1 items-center justify-center rounded-xl border border-line bg-white px-4 active:opacity-80"
+                  className="min-h-12 flex-1 items-center justify-center rounded-xl bg-secondary px-4 active:opacity-80"
                   disabled={filteredProducts.length === 0}
                   onPress={toggleFilteredProductsSelection}
                 >
-                  <Text className="text-center text-sm font-bold text-ink">
+                  <Text className="text-center text-base font-extrabold text-white">
                     {isEveryFilteredProductSelected ? 'Limpar selecao filtrada' : 'Selecionar filtrados'}
                   </Text>
                 </Pressable>

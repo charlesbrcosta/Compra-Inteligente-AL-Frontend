@@ -32,7 +32,7 @@ export function Button({ title, onPress, variant = 'primary', isLoading = false 
       disabled={isLoading}
       onPress={onPress}
     >
-      {isLoading ? <ActivityIndicator color={variant === 'ghost' ? '#D62839' : '#fff'} /> : <Text className={`text-sm font-bold ${textVariants[variant]}`}>{title}</Text>}
+      {isLoading ? <ActivityIndicator color={variant === 'ghost' ? '#D62839' : '#fff'} /> : <Text className={`text-base font-extrabold ${textVariants[variant]}`}>{title}</Text>}
     </Pressable>
   );
 }
