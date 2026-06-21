@@ -1,6 +1,6 @@
 import { ComponentType, useEffect, useMemo, useState } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Pressable, Text, View } from 'react-native';
+import { AppState, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppNavigationProvider, AppRouteName } from '@/app/routes/appNavigation';
@@ -136,11 +136,21 @@ function NavIcon({ icon, isActive }: { icon: 'home' | 'list' | 'chart' | 'profil
 }
 
 export function RootNavigator() {
-  const { hydrate, isLoading, session } = useAuthStore();
+  const { checkSession, hydrate, isLoading, session } = useAuthStore();
 
   useEffect(() => {
     hydrate();
   }, [hydrate]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        checkSession();
+      }
+    });
+
+    return () => subscription.remove();
+  }, [checkSession]);
 
   if (isLoading) {
     return <Loading label="Preparando seus dados" />;
