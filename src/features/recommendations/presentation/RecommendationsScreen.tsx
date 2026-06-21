@@ -182,14 +182,14 @@ function NoProductsRecommendationState({ onAddProduct }: { onAddProduct: () => v
   return (
     <Pressable
       accessibilityRole="button"
-      className="items-center justify-center rounded-2xl border border-dashed border-line bg-white p-7 active:opacity-80"
+      className="items-center justify-center rounded-2xl border border-dashed border-emerald-300 bg-emerald-50 p-7 active:opacity-80"
       onPress={onAddProduct}
     >
       <View className="mb-4 h-14 w-14 items-center justify-center rounded-2xl bg-primary">
         <Text className="text-3xl font-extrabold text-white">+</Text>
       </View>
-      <Text className="text-center text-xl font-extrabold text-ink">Nenhum produto</Text>
-      <Text className="mt-2 text-center text-base leading-6 text-muted">
+      <Text className="text-center text-xl font-extrabold text-emerald-950">Nenhum produto</Text>
+      <Text className="mt-2 text-center text-base leading-6 text-emerald-900">
         Toque para abrir sua lista e adicionar produtos para comparar os mercados.
       </Text>
     </Pressable>
