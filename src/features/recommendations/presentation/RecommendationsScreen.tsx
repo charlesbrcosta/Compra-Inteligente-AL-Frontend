@@ -325,7 +325,7 @@ function FilterButton({ isActive, label, onPress }: { isActive: boolean; label: 
   return (
     <Pressable
       className={`min-h-11 min-w-24 flex-1 items-center justify-center rounded-xl border px-3 ${
-        isActive ? 'border-primary bg-primary' : 'border-line bg-white'
+        isActive ? 'border-success bg-success' : 'border-line bg-white'
       }`}
       onPress={onPress}
     >
