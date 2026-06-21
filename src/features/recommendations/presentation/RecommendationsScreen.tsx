@@ -148,7 +148,7 @@ export function RecommendationsScreen() {
         ) : null}
 
         {products.length === 0 ? (
-          <EmptyState title="Nenhum produto na lista" description="Adicione produtos para comparar supermercados e atacadistas." />
+          <NoProductsRecommendationState onAddProduct={() => navigate('Products')} />
         ) : !currentLocation ? null : visibleRecommendations.length === 0 ? (
           <RecommendationEmptyState />
         ) : (
@@ -175,6 +175,24 @@ function RecommendationEmptyState() {
       title="Nenhum mercado encontrado"
       description="A SEFAZ nao retornou estabelecimentos reais para os produtos da lista. Tente produtos mais comuns ou atualize a busca."
     />
+  );
+}
+
+function NoProductsRecommendationState({ onAddProduct }: { onAddProduct: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      className="items-center justify-center rounded-2xl border border-dashed border-line bg-white p-7 active:opacity-80"
+      onPress={onAddProduct}
+    >
+      <View className="mb-4 h-14 w-14 items-center justify-center rounded-2xl bg-primary">
+        <Text className="text-3xl font-extrabold text-white">+</Text>
+      </View>
+      <Text className="text-center text-xl font-extrabold text-ink">Nenhum produto</Text>
+      <Text className="mt-2 text-center text-base leading-6 text-muted">
+        Toque para abrir sua lista e adicionar produtos para comparar os mercados.
+      </Text>
+    </Pressable>
   );
 }
 
