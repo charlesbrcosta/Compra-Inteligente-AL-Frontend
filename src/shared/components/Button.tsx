@@ -20,7 +20,7 @@ const textVariants = {
   primary: 'text-white',
   secondary: 'text-white',
   success: 'text-white',
-  accent: 'text-white',
+  accent: 'text-ink',
   ghost: 'text-ink',
   danger: 'text-white',
 };

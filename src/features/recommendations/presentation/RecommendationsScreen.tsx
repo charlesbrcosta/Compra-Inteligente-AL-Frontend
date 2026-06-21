@@ -117,7 +117,7 @@ export function RecommendationsScreen() {
               className="min-h-14 items-center justify-center rounded-xl bg-accent px-5 active:opacity-80"
               onPress={() => navigate('History')}
             >
-              <Text className="text-base font-extrabold text-white">Historico</Text>
+              <Text className="text-base font-extrabold text-ink">Historico</Text>
             </Pressable>
           </View>
         </View>
