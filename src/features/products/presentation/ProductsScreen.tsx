@@ -461,7 +461,7 @@ function SefazResultsModal({
           <View className="mb-4 flex-row items-start justify-between gap-4">
             <View className="min-w-0 flex-1">
               <Text className="text-2xl font-extrabold text-ink">Produtos encontrados</Text>
-              <Text className="mt-1 text-base leading-6 text-muted">Toque em V para adicionar ou na lixeira para remover da selecao.</Text>
+              <Text className="mt-1 text-base leading-6 text-muted">Toque em V para adicionar. O item fica na sua lista sem vinculo com supermercado.</Text>
             </View>
             <Pressable className="h-11 w-11 items-center justify-center rounded-xl bg-primary active:opacity-80" onPress={onClose}>
               <Text className="text-lg font-extrabold text-white">X</Text>
@@ -635,10 +635,7 @@ function BarcodeScannerModal({
                     return (
                       <View key={getSefazProductKey(product)} className="rounded-2xl border border-line bg-sand p-4">
                         <Text className="text-sm font-extrabold text-ink">{normalizeSefazProductName(product)}</Text>
-                        <Text className="mt-1 text-xs font-semibold text-muted">{product.marketName}</Text>
-                        <Text className="mt-1 text-xs text-muted">
-                          {product.neighborhood}, {product.city}
-                        </Text>
+                        <Text className="mt-1 text-xs font-semibold text-muted">Produto confirmado pela SEFAZ</Text>
                         <View className="mt-3 flex-row items-center justify-between gap-3">
                           <Text className="text-xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
                           <Pressable
@@ -700,10 +697,8 @@ function SefazProductResultCard({
       <View className="flex-row items-start gap-3">
         <View className="min-w-0 flex-1">
           <Text className="text-base font-extrabold text-ink">{normalizeSefazProductName(product)}</Text>
-          <Text className="mt-1 text-sm text-muted">{product.marketName}</Text>
-          <Text className="mt-1 text-xs text-muted">
-            {product.neighborhood}, {product.city}
-          </Text>
+          <Text className="mt-1 text-sm text-muted">Produto confirmado pela SEFAZ</Text>
+          <Text className="mt-1 text-xs text-muted">Ao adicionar, ele nao fica vinculado a nenhum supermercado.</Text>
           <Text className="mt-2 text-2xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
         </View>
         <View className="gap-2">
