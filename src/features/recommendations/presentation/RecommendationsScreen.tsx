@@ -18,11 +18,9 @@ import { ScreenContainer } from '@/shared/components/ScreenContainer';
 import { GeoLocation, Recommendation } from '@/shared/types/entities';
 import { formatCurrency } from '@/shared/utils/formatters';
 
-type MarketFilter = 'all' | 'city' | 'neighborhood';
-
 export function RecommendationsScreen() {
   const { products, loadProducts } = useProductStore();
-  const { user, loadUser } = useUserStore();
+  const { loadUser } = useUserStore();
   const { loadVehicle } = useVehicleStore();
   const { recommendations, isLoading, error, clearRecommendations, loadRecommendations } = useRecommendations();
   const { navigate } = useAppNavigation();
@@ -36,7 +34,6 @@ export function RecommendationsScreen() {
     startWatchingLocation,
     stopWatchingLocation,
   } = useCurrentLocation();
-  const [filter, setFilter] = useState<MarketFilter>('all');
   const [selectedMarketId, setSelectedMarketId] = useState<string | null>(null);
   const lastRecommendationLocationRef = useRef(currentLocation);
 
@@ -79,26 +76,9 @@ export function RecommendationsScreen() {
     loadRecommendations(currentLocation);
   }, [clearRecommendations, currentLocation, loadRecommendations]);
 
-  const filteredRecommendations = useMemo(() => {
-    if (!user || filter === 'all') {
-      return recommendations;
-    }
-
-    return recommendations.filter((recommendation) => {
-      if (filter === 'city') {
-        return normalize(recommendation.market.city) === normalize(user.city);
-      }
-
-      return (
-        normalize(recommendation.market.city) === normalize(user.city) &&
-        normalize(recommendation.market.neighborhood) === normalize(user.neighborhood)
-      );
-    });
-  }, [filter, recommendations, user]);
-
   const visibleRecommendations = useMemo(
-    () => markBestRecommendationForActiveFilter(filteredRecommendations),
-    [filteredRecommendations],
+    () => markBestRecommendationForActiveFilter(recommendations),
+    [recommendations],
   );
 
   useEffect(() => {
@@ -127,19 +107,18 @@ export function RecommendationsScreen() {
     <ScreenContainer onRefresh={reloadScreen}>
       <Header
         title="Recomendacao"
-        subtitle="Produtos, combustivel, rota real e filtros por localidade."
+        subtitle="Produtos, combustivel, rota real e impactos do percurso."
       />
 
       <View className="gap-4">
-        <View className="flex-row gap-2">
-          <FilterButton isActive={filter === 'all'} label="Todos" onPress={() => setFilter('all')} />
-          <FilterButton isActive={filter === 'city'} label="Cidade" onPress={() => setFilter('city')} />
-          <FilterButton isActive={filter === 'neighborhood'} label="Bairro" onPress={() => setFilter('neighborhood')} />
-        </View>
-
         <View className="gap-3 sm:flex-row">
           <View className="flex-1">
-            <Button title="Historico" variant="ghost" onPress={() => navigate('History')} />
+            <Pressable
+              className="min-h-14 items-center justify-center rounded-xl bg-accent px-5 active:opacity-80"
+              onPress={() => navigate('History')}
+            >
+              <Text className="text-base font-extrabold text-ink">Historico</Text>
+            </Pressable>
           </View>
         </View>
 
@@ -156,7 +135,7 @@ export function RecommendationsScreen() {
           <LocationReadyEmptyMap
             description={
               recommendations.length > 0
-                ? 'Existem mercados na recomendacao, mas o filtro atual nao encontrou estabelecimentos para exibir no mapa.'
+                ? 'Existem mercados na recomendacao, mas nenhum estabelecimento com localizacao valida foi encontrado para exibir no mapa.'
                 : 'Sua localizacao foi obtida. O mapa sera exibido quando a SEFAZ retornar mercados reais para os produtos da lista.'
             }
           />
@@ -171,10 +150,7 @@ export function RecommendationsScreen() {
         {products.length === 0 ? (
           <EmptyState title="Nenhum produto na lista" description="Adicione produtos para comparar supermercados e atacadistas." />
         ) : !currentLocation ? null : visibleRecommendations.length === 0 ? (
-          <RecommendationEmptyState
-            hasRecommendations={recommendations.length > 0}
-            onShowAll={() => setFilter('all')}
-          />
+          <RecommendationEmptyState />
         ) : (
           <>
             <CostGauge recommendations={visibleRecommendations} />
@@ -193,25 +169,7 @@ export function RecommendationsScreen() {
   );
 }
 
-function RecommendationEmptyState({
-  hasRecommendations,
-  onShowAll,
-}: {
-  hasRecommendations: boolean;
-  onShowAll: () => void;
-}) {
-  if (hasRecommendations) {
-    return (
-      <View className="gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
-        <Text className="text-base font-bold text-amber-950">Nenhum mercado nesse filtro</Text>
-        <Text className="text-sm text-amber-900">
-          Existem mercados calculados, mas eles nao combinam com o filtro selecionado. Use Todos para ver a recomendacao completa.
-        </Text>
-        <Button title="Ver todos" variant="secondary" onPress={onShowAll} />
-      </View>
-    );
-  }
-
+function RecommendationEmptyState() {
   return (
     <EmptyState
       title="Nenhum mercado encontrado"
@@ -288,14 +246,6 @@ function markBestRecommendationForActiveFilter(recommendations: Recommendation[]
   }));
 }
 
-function normalize(value: string) {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
-}
-
 function shouldRefreshRecommendations(previousLocation: GeoLocation | null, currentLocation: GeoLocation) {
   if (!previousLocation) {
     return true;
@@ -319,19 +269,6 @@ function calculateDistanceKm(origin: GeoLocation, destination: GeoLocation) {
 
 function toRadians(value: number) {
   return (value * Math.PI) / 180;
-}
-
-function FilterButton({ isActive, label, onPress }: { isActive: boolean; label: string; onPress: () => void }) {
-  return (
-    <Pressable
-      className={`min-h-11 min-w-24 flex-1 items-center justify-center rounded-xl border px-3 ${
-        isActive ? 'border-success bg-success' : 'border-line bg-white'
-      }`}
-      onPress={onPress}
-    >
-      <Text className={`text-sm font-bold ${isActive ? 'text-white' : 'text-slate-700'}`}>{label}</Text>
-    </Pressable>
-  );
 }
 
 function CostGauge({ recommendations }: { recommendations: Recommendation[] }) {
