@@ -78,7 +78,7 @@ export function HomeScreen() {
           </View>
         </View>
 
-        <Button title="Ver historico" variant="ghost" onPress={() => navigate('History')} />
+        <Button title="Ver historico" variant="accent" onPress={() => navigate('History')} />
       </View>
     </ScreenContainer>
   );

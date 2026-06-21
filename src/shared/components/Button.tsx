@@ -3,14 +3,15 @@ import { ActivityIndicator, Pressable, Text } from 'react-native';
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'success' | 'ghost' | 'danger';
+  variant?: 'primary' | 'secondary' | 'success' | 'accent' | 'ghost' | 'danger';
   isLoading?: boolean;
 }
 
 const variants = {
-  primary: 'bg-primary',
+  primary: 'bg-success',
   secondary: 'bg-secondary',
   success: 'bg-success',
+  accent: 'bg-accent',
   ghost: 'border border-line bg-white',
   danger: 'bg-red-700',
 };
@@ -19,6 +20,7 @@ const textVariants = {
   primary: 'text-white',
   secondary: 'text-white',
   success: 'text-white',
+  accent: 'text-white',
   ghost: 'text-ink',
   danger: 'text-white',
 };
