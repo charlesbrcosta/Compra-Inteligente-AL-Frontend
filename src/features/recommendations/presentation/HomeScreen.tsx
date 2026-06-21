@@ -66,7 +66,7 @@ export function HomeScreen() {
           <Text className="mb-3 text-xl font-extrabold text-ink">Mercados monitorados</Text>
           {recommendations.length === 0 ? (
             <Card>
-              <Text className="text-sm leading-5 text-muted">
+              <Text className="text-base leading-6 text-muted">
                 Quando houver produtos, GPS e retorno da SEFAZ, os estabelecimentos reais aparecem aqui.
               </Text>
             </Card>

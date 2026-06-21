@@ -4,7 +4,7 @@ import { AppState, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppNavigationProvider, AppRouteName } from '@/app/routes/appNavigation';
-import { BrandMark } from '@/shared/components/BrandMark';
+import { BrandLockup } from '@/shared/components/BrandMark';
 import { Loading } from '@/shared/components/Loading';
 import { AuthStackParamList, RootStackParamList } from '@/shared/types/navigation';
 import { LoginScreen } from '@/features/auth/presentation/LoginScreen';
@@ -60,9 +60,8 @@ function AppNavigator() {
     <SafeAreaView className="flex-1 bg-sand">
       <View className="min-h-20 flex-row items-center border-b border-line bg-sand px-5">
         <View className="min-w-0 flex-1 flex-row items-center gap-3">
-          <BrandMark compact />
           <View className="min-w-0 flex-1">
-            <Text className="text-sm font-black uppercase tracking-wider text-primary">Compra Inteligente AL</Text>
+            <BrandLockup compact />
             <Text className="text-2xl font-extrabold text-ink">{route.title}</Text>
           </View>
         </View>

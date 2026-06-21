@@ -19,15 +19,18 @@ export function BrandMark({ compact = false }: BrandMarkProps) {
   );
 }
 
-export function BrandLockup() {
+export function BrandLockup({ compact = false }: { compact?: boolean }) {
+  const wordClass = compact ? 'text-xl leading-6' : 'text-xl leading-6';
+  const badgeClass = compact ? 'text-xs px-2 py-0.5' : 'text-xs px-2 py-0.5';
+
   return (
     <View className="flex-row items-center gap-3">
-      <BrandMark />
+      <BrandMark compact={compact} />
       <View className="min-w-0 flex-1">
         <View className="flex-row flex-wrap items-center gap-x-1">
-          <Text className="text-lg font-extrabold leading-5 text-ink">Compra</Text>
-          <Text className="text-lg font-extrabold leading-5 text-primary">Inteligente</Text>
-          <Text className="rounded-md bg-success px-1.5 py-0.5 text-[10px] font-extrabold text-white">AL</Text>
+          <Text className={`${wordClass} font-extrabold text-ink`}>Compra</Text>
+          <Text className={`${wordClass} font-extrabold text-primary`}>Inteligente</Text>
+          <Text className={`rounded-md bg-success font-extrabold text-white ${badgeClass}`}>AL</Text>
         </View>
       </View>
     </View>

@@ -40,8 +40,8 @@ export function RegisterScreen({ navigation }: Props) {
       <View className="mb-8 gap-5">
         <BrandLockup />
         <View>
-          <Text className="text-4xl font-extrabold leading-10 text-ink">Crie sua conta.</Text>
-          <Text className="mt-3 text-base leading-6 text-muted">
+          <Text className="text-3xl font-extrabold leading-9 text-ink">Crie sua conta.</Text>
+          <Text className="mt-3 text-lg leading-7 text-muted">
             Seus dados ajudam o app a calcular mercados, rotas e custo total com mais precisao.
           </Text>
         </View>

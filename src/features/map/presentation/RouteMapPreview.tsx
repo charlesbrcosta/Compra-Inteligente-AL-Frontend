@@ -80,7 +80,7 @@ export function RouteMapPreview({
       <View className="gap-1 sm:flex-row sm:items-center sm:justify-between">
         <View className="min-w-0 flex-1">
           <Text className="text-base font-extrabold text-ink">Mapa interativo da rota</Text>
-          <Text className="mt-1 text-xs text-muted">OpenStreetMap com zoom, pan e rota do mercado recomendado.</Text>
+          <Text className="mt-1 text-sm leading-5 text-muted">OpenStreetMap com zoom, pan e rota do mercado recomendado.</Text>
         </View>
         {targetMarket ? <Text className="text-sm font-extrabold text-primary">{formatDistance(targetMarket.distanceKm)}</Text> : null}
       </View>
@@ -113,7 +113,7 @@ export function RouteMapPreview({
         </View>
 
         {route?.durationMinutes ? (
-          <Text className="text-xs text-muted">Tempo estimado sem trafego real: {route.durationMinutes} min</Text>
+          <Text className="text-sm text-muted">Tempo estimado sem trafego real: {route.durationMinutes} min</Text>
         ) : null}
 
         {routeError ? <Text className="text-xs font-semibold text-amber-800">{routeError}</Text> : null}

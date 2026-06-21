@@ -12,7 +12,7 @@ export function EmptyState({ title, description }: EmptyStateProps) {
         <Text className="text-xl font-extrabold text-muted">+</Text>
       </View>
       <Text className="text-center text-lg font-extrabold text-ink">{title}</Text>
-      <Text className="mt-2 text-center text-sm leading-5 text-muted">{description}</Text>
+      <Text className="mt-2 text-center text-base leading-6 text-muted">{description}</Text>
     </View>
   );
 }

@@ -12,11 +12,11 @@ export function MarketCard({ market }: { market: Market }) {
         </View>
         <View className="min-w-0 flex-1">
           <Text className="text-base font-extrabold text-ink">{market.name}</Text>
-          <Text className="mt-1 text-sm text-muted">{market.neighborhood}, {market.city}</Text>
+          <Text className="mt-1 text-base text-muted">{market.neighborhood}, {market.city}</Text>
         </View>
         <Text className="text-sm font-extrabold text-primary">{formatDistance(market.distanceKm)}</Text>
       </View>
-      <Text className="mt-3 text-sm text-muted">{market.address}</Text>
+      <Text className="mt-3 text-base leading-6 text-muted">{market.address}</Text>
     </View>
   );
 }

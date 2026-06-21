@@ -461,7 +461,7 @@ function SefazResultsModal({
           <View className="mb-4 flex-row items-start justify-between gap-4">
             <View className="min-w-0 flex-1">
               <Text className="text-2xl font-extrabold text-ink">Produtos encontrados</Text>
-              <Text className="mt-1 text-sm text-muted">Toque em V para adicionar ou na lixeira para remover da selecao.</Text>
+              <Text className="mt-1 text-base leading-6 text-muted">Toque em V para adicionar ou na lixeira para remover da selecao.</Text>
             </View>
             <Pressable className="h-11 w-11 items-center justify-center rounded-xl bg-primary active:opacity-80" onPress={onClose}>
               <Text className="text-lg font-extrabold text-white">X</Text>
@@ -610,7 +610,7 @@ function BarcodeScannerModal({
         {!permissionGranted ? (
           <View className="absolute bottom-0 left-0 right-0 z-20 rounded-t-3xl bg-white p-6" style={styles.scanPanel}>
             <Text className="text-center text-lg font-extrabold text-ink">Camera sem permissao</Text>
-            <Text className="mt-2 text-center text-sm leading-5 text-muted">
+            <Text className="mt-2 text-center text-base leading-6 text-muted">
               Autorize a camera para ler o codigo de barras do produto.
             </Text>
             <View className="mt-4">

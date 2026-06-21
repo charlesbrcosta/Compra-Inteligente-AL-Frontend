@@ -48,8 +48,8 @@ export function LoginScreen({ navigation }: Props) {
       <View className="mb-8 gap-5">
         <BrandLockup />
         <View>
-          <Text className="text-4xl font-extrabold leading-10 text-ink">Sua compra, mais economica.</Text>
-          <Text className="mt-3 text-base leading-6 text-muted">
+          <Text className="text-3xl font-extrabold leading-9 text-ink">Sua compra, mais economica.</Text>
+          <Text className="mt-3 text-lg leading-7 text-muted">
             Compare precos reais e custo de deslocamento antes de sair de casa.
           </Text>
         </View>
@@ -95,7 +95,7 @@ export function LoginScreen({ navigation }: Props) {
         <Button title="Criar cadastro" variant="success" onPress={() => navigation.navigate('Register')} />
       </Card>
       <View className="mt-4">
-        <Text className="text-center text-xs text-muted">Use um e-mail cadastrado para iniciar uma sessao local no app.</Text>
+        <Text className="text-center text-sm leading-5 text-muted">Use um e-mail cadastrado para iniciar uma sessao local no app.</Text>
       </View>
     </AuthContainer>
   );
