@@ -8,7 +8,7 @@ interface ButtonProps {
 }
 
 const variants = {
-  primary: 'bg-success',
+  primary: 'bg-primary',
   secondary: 'bg-secondary',
   success: 'bg-success',
   accent: 'bg-accent',
