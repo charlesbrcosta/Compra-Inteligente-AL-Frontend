@@ -161,14 +161,14 @@ export function ProductsScreen() {
   };
 
   const addSefazProductToList = async (sefazProduct: SefazProductPrice, barcode?: string | null) => {
-    const normalizedBarcode = barcode?.trim();
+    const normalizedBarcode = normalizeBarcodeValue(barcode) ?? normalizeBarcodeValue(sefazProduct.gtin);
     const productKey = normalizedBarcode ? `barcode-${normalizedBarcode}` : getSefazProductKey(sefazProduct);
 
     if (pendingSefazProductKeys.includes(productKey) || isSaving) {
       return;
     }
 
-    const name = normalizeSefazProductName(sefazProduct);
+    const name = compactSefazProductName(normalizeSefazProductName(sefazProduct));
     const unit = normalizeSefazUnit(sefazProduct.unit);
     const alreadyHasBarcode = normalizedBarcode
       ? products.some((product) => product.barcode === normalizedBarcode)
@@ -630,7 +630,9 @@ function BarcodeScannerModal({
 
                     return (
                       <View key={getSefazProductKey(product)} className="rounded-2xl border border-line bg-sand p-4">
-                        <Text className="text-sm font-extrabold text-ink">{normalizeSefazProductName(product)}</Text>
+                        <Text className="text-sm font-extrabold text-ink" numberOfLines={2}>
+                          {normalizeSefazProductName(product)}
+                        </Text>
                         <Text className="mt-1 text-xs font-semibold text-muted">Produto confirmado pela SEFAZ</Text>
                         <View className="mt-3 flex-row items-center justify-between gap-3">
                           <Text className="text-xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
@@ -692,7 +694,9 @@ function SefazProductResultCard({
     <View className="rounded-2xl border border-line bg-white p-4">
       <View className="flex-row items-start gap-3">
         <View className="min-w-0 flex-1">
-          <Text className="text-base font-extrabold text-ink">{normalizeSefazProductName(product)}</Text>
+          <Text className="text-base font-extrabold text-ink" numberOfLines={2}>
+            {normalizeSefazProductName(product)}
+          </Text>
           <Text className="mt-1 text-sm text-muted">Produto confirmado pela SEFAZ</Text>
           <Text className="mt-2 text-2xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
         </View>
@@ -712,6 +716,40 @@ function SefazProductResultCard({
 
 function normalizeSefazProductName(product: SefazProductPrice) {
   return (product.sefazDescription || product.productName).trim();
+}
+
+function compactSefazProductName(name: string) {
+  const cleanedName = name
+    .replace(/\bV\.?\s*ST\b.*$/i, '')
+    .replace(/\bMVA\b.*$/i, '')
+    .replace(/\s+C\/\s*/gi, ' c/ ')
+    .replace(/\s+COM\s*-\s*/gi, ' com ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (cleanedName.length <= 52) {
+    return cleanedName;
+  }
+
+  const words = cleanedName.split(' ');
+  const compactWords: string[] = [];
+
+  for (const word of words) {
+    const nextName = [...compactWords, word].join(' ');
+
+    if (nextName.length > 52) {
+      break;
+    }
+
+    compactWords.push(word);
+  }
+
+  return compactWords.length > 0 ? compactWords.join(' ') : cleanedName.slice(0, 52).trim();
+}
+
+function normalizeBarcodeValue(barcode?: string | null) {
+  const normalizedBarcode = barcode?.trim();
+  return normalizedBarcode && normalizedBarcode.length > 0 ? normalizedBarcode : undefined;
 }
 
 function BarcodeIcon() {

@@ -15,7 +15,9 @@ export function ProductCard({ isSelected, product, onEdit, onToggleSelect }: Pro
     <View className={`rounded-2xl border p-4 ${isSelected ? 'border-success bg-green-50' : 'border-line bg-white'}`}>
       <View className="flex-row items-center justify-between gap-3">
         <View className="min-w-0 flex-1">
-          <Text className="text-base font-extrabold text-ink">{product.name}</Text>
+          <Text className="text-base font-extrabold leading-5 text-ink" numberOfLines={2}>
+            {product.name}
+          </Text>
           <Text className="mt-1 text-sm font-semibold text-muted">
             {product.quantity} {product.unit}
           </Text>
