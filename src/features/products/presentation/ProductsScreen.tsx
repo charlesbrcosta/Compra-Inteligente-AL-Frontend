@@ -549,7 +549,7 @@ function BarcodeScannerModal({
 
   const scanLineTranslateY = scanLinePosition.interpolate({
     inputRange: [0, 1],
-    outputRange: [8, 164],
+    outputRange: [14, 150],
   });
 
   return (
@@ -566,7 +566,7 @@ function BarcodeScannerModal({
           <ScanFallback />
         )}
 
-        <View className="absolute inset-0 z-10 bg-black/20 px-5 pb-8 pt-10" style={styles.scanOverlay}>
+        <View className="absolute inset-0 z-10 bg-black/20 px-5 pb-8 pt-16" style={styles.scanOverlay}>
           <View className="flex-row items-center justify-between">
             <Pressable
               accessibilityLabel="Fechar scanner"
