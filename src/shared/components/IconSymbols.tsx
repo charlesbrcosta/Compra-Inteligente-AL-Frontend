@@ -36,3 +36,16 @@ export function CheckboxSymbol({ isChecked }: { isChecked: boolean }) {
     </View>
   );
 }
+
+export function BasketSymbol() {
+  return (
+    <View className="h-6 w-6 items-center justify-center">
+      <View className="absolute top-1 h-2 w-3.5 rounded-t-full border-2 border-muted border-b-0" />
+      <View className="mt-2 h-3.5 w-5 rounded-b-md border-2 border-muted bg-white">
+        <View className="absolute left-1 top-1 h-1.5 w-0.5 rounded-full bg-muted" />
+        <View className="absolute left-2.5 top-1 h-1.5 w-0.5 rounded-full bg-muted" />
+        <View className="absolute right-1 top-1 h-1.5 w-0.5 rounded-full bg-muted" />
+      </View>
+    </View>
+  );
+}

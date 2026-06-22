@@ -9,6 +9,7 @@ import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { Header } from '@/shared/components/Header';
+import { BasketSymbol } from '@/shared/components/IconSymbols';
 import { Input } from '@/shared/components/Input';
 import { Loading } from '@/shared/components/Loading';
 import { ProductCard } from '@/shared/components/ProductCard';
@@ -375,7 +376,11 @@ export function ProductsScreen() {
             </View>
           ) : null}
           {products.length === 0 ? (
-            <EmptyState title="Sua lista esta vazia" description="Adicione itens para calcular o melhor mercado." />
+            <EmptyState
+              description="Adicione itens para calcular o melhor mercado."
+              icon={<BasketSymbol />}
+              title="Sua lista esta vazia"
+            />
           ) : filteredProducts.length === 0 ? (
             <EmptyState title="Nenhum produto encontrado" description="Ajuste o filtro para visualizar outros itens da sua lista." />
           ) : (
