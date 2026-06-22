@@ -549,7 +549,7 @@ function BarcodeScannerModal({
 
   const scanLineTranslateY = scanLinePosition.interpolate({
     inputRange: [0, 1],
-    outputRange: [14, 150],
+    outputRange: [4, 150],
   });
 
   return (
