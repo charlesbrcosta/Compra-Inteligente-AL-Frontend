@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 import { VehicleService } from '@/features/vehicle/application/VehicleService';
-import { AsyncStorageVehicleRepository } from '@/features/vehicle/infrastructure/AsyncStorageVehicleRepository';
+import { ApiVehicleRepository } from '@/features/vehicle/infrastructure/ApiVehicleRepository';
 import { Vehicle } from '@/shared/types/entities';
 
 interface VehicleState {
@@ -10,7 +10,7 @@ interface VehicleState {
   saveVehicle: (vehicle: Vehicle) => Promise<void>;
 }
 
-const service = new VehicleService(new AsyncStorageVehicleRepository());
+const service = new VehicleService(new ApiVehicleRepository());
 
 export const useVehicleStore = create<VehicleState>((set) => ({
   vehicle: null,

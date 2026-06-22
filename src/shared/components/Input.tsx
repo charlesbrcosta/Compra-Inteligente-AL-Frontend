@@ -7,13 +7,16 @@ interface InputProps extends TextInputProps {
 
 export function Input({ label, error, className = '', ...props }: InputProps) {
   return (
-    <View className="gap-1">
-      <Text className="text-sm font-semibold text-slate-700">{label}</Text>
+    <View className="gap-1.5">
+      <Text className="text-xs font-bold uppercase tracking-wide text-muted">{label}</Text>
       <TextInput
-        className={`min-h-12 rounded-lg border bg-white px-3 text-base text-ink ${
-          error ? 'border-red-400' : 'border-slate-200'
+        className={`h-14 max-h-14 overflow-hidden rounded-xl border bg-white px-4 py-0 text-base leading-5 text-ink ${
+          error ? 'border-red-400' : 'border-line'
         } ${className}`}
-        placeholderTextColor="#94a3b8"
+        multiline={false}
+        numberOfLines={1}
+        placeholderTextColor="#B9AFA2"
+        textAlignVertical="center"
         {...props}
       />
       {error ? <Text className="text-xs text-red-600">{error}</Text> : null}

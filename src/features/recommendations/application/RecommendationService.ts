@@ -1,7 +1,9 @@
 import { DistanceService } from '@/features/map/application/DistanceService';
-import { GeoLocation, Market, Recommendation, ShoppingProduct, Vehicle } from '@/shared/types/entities';
+import { GeoLocation, Market, Recommendation, RouteCondition, ShoppingProduct, Vehicle } from '@/shared/types/entities';
 
 export class RecommendationService {
+  private readonly maxRouteImpactPercent = 0.6;
+
   constructor(private readonly distanceService = new DistanceService()) {}
 
   calculateDisplacementCost(distanceKm: number, consumptionKmPerLiter: number, fuelPricePerLiter: number) {
@@ -10,6 +12,11 @@ export class RecommendationService {
     }
 
     return ((distanceKm * 2) / consumptionKmPerLiter) * fuelPricePerLiter;
+  }
+
+  calculateRouteImpactPercent(routeConditions: RouteCondition[]) {
+    const totalImpact = routeConditions.reduce((total, condition) => total + condition.impactPercent, 0);
+    return Math.min(totalImpact, this.maxRouteImpactPercent);
   }
 
   calculateProductsTotal(products: ShoppingProduct[], market: Market) {
@@ -35,18 +42,26 @@ export class RecommendationService {
 
     const recommendations = marketsWithCurrentDistance.map((market) => {
       const productsTotal = this.calculateProductsTotal(products, market);
-      const displacementCost = vehicle
+      const routeConditions = market.routeConditions ?? [];
+      const routeImpactPercent = this.calculateRouteImpactPercent(routeConditions);
+      const baseDisplacementCost = vehicle
         ? this.calculateDisplacementCost(
             market.distanceKm,
             vehicle.averageConsumptionKmPerLiter,
             vehicle.fuelPricePerLiter,
           )
         : 0;
+      const routeImpactCost = baseDisplacementCost * routeImpactPercent;
+      const displacementCost = baseDisplacementCost + routeImpactCost;
       const finalTotal = productsTotal + displacementCost;
 
       return {
         market,
         productsTotal,
+        baseDisplacementCost,
+        routeImpactCost,
+        routeImpactPercent,
+        routeConditions,
         displacementCost,
         finalTotal,
         estimatedSavings: 0,

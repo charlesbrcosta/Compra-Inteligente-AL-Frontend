@@ -6,17 +6,26 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "splash": {
-      "backgroundColor": "#f8fafc"
+      "backgroundColor": "#FFF8EE"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Usamos sua localizacao para calcular a rota e distancia ate os estabelecimentos proximos.",
+        "NSCameraUsageDescription": "Usamos a camera para escanear o codigo de barras e consultar o produto na SEFAZ."
+      }
     },
     "android": {
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA"
+      ],
       "adaptiveIcon": {
-        "backgroundColor": "#f8fafc"
+        "backgroundColor": "#FFF8EE"
       },
       "package": "com.comprainteligente.al"
     }

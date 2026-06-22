@@ -2,7 +2,7 @@
 
 Aplicativo mobile e web desenvolvido com **React Native**, **Expo** e **TypeScript** para comparar supermercados e atacadistas de Alagoas considerando o preço dos produtos e o custo estimado de deslocamento do veículo.
 
-O projeto funciona com dados mockados e foi estruturado para evoluir futuramente para integrações reais com backend, SEFAZ e serviços de mapas.
+O projeto consome o backend local, usa a API da SEFAZ para produtos e estabelecimentos, e calcula rotas reais por serviços gratuitos configurados no backend.
 
 ## Sumário
 
@@ -11,9 +11,10 @@ O projeto funciona com dados mockados e foi estruturado para evoluir futuramente
 - [Tecnologias](#tecnologias)
 - [Requisitos](#requisitos)
 - [Instalação local](#instalação-local)
+- [Configuração da API](#configuração-da-api)
 - [Como rodar](#como-rodar)
 - [Scripts disponíveis](#scripts-disponíveis)
-- [Dados mockados](#dados-mockados)
+- [Fontes de dados](#fontes-de-dados)
 - [Estrutura do projeto](#estrutura-do-projeto)
 - [Regra de negócio principal](#regra-de-negócio-principal)
 - [Validação](#validação)
@@ -32,25 +33,33 @@ O usuário pode:
 - cadastrar seu veículo;
 - informar consumo médio e preço do combustível;
 - montar uma lista de compras;
-- comparar mercados mockados;
+- comparar estabelecimentos retornados pela SEFAZ;
 - receber uma recomendação do mercado mais vantajoso.
 
 A recomendação considera:
 
 - total dos produtos no mercado;
-- distância entre a posição atual mockada e o mercado;
+- distância real entre o GPS do usuario e o estabelecimento;
 - custo de combustível para ida e volta;
 - total final da compra.
 
 ## Funcionalidades
 
-- Autenticação mockada com login, cadastro e logout.
+- Autenticação por sessão local no backend com login, cadastro e logout.
 - Persistência local com AsyncStorage.
 - Cadastro de usuário com nome, e-mail, cidade e bairro.
 - Cadastro de veículo com modelo, tipo de combustível, consumo médio e preço por litro.
-- Lista de produtos com adicionar, editar e remover.
-- Mercados mockados de Alagoas com preços, coordenadas e produtos disponíveis.
+- Lista manual de produtos com adicionar, editar e remover.
+- Consulta de preços reais de produtos pela API da SEFAZ via backend.
+- Consulta de preço real de combustível pela API da SEFAZ via backend.
+- Mercados e preços consultados pela SEFAZ via backend.
 - Cálculo de recomendação considerando km rodado do veículo.
+- Filtro de recomendações por todos os mercados, cidade ou bairro.
+- Tela de status para impactos do percurso que ainda dependem de API gratuita real.
+- Histórico das recomendações calculadas.
+- Indicação da rota calculada por ruas.
+- Mapa interativo com OpenStreetMap/Leaflet, zoom, pan e rota por ruas.
+- Geolocalização em tempo real com GPS do dispositivo para recalcular distância e recomendação.
 - Destaque visual para o mercado mais vantajoso.
 - Interface responsiva para mobile e web.
 - Documentação técnica para evolução futura.
@@ -99,6 +108,35 @@ Instale as dependências:
 ```bash
 npm install
 ```
+
+## Configuração da API
+
+O frontend consome o backend em:
+
+```txt
+http://localhost:3333/api
+```
+
+Essa configuração pode ser definida por variável de ambiente:
+
+```txt
+EXPO_PUBLIC_API_BASE_URL=http://localhost:3333/api
+```
+
+Use `.env.example` como referência para criar um `.env` local. Se a variável não existir, o app usa `http://localhost:3333/api`.
+
+Antes de usar login, produtos, veículo, mercados ou recomendações, suba o backend:
+
+```bash
+cd ../Backend
+npm install
+npm run db:setup
+npm run dev
+```
+
+Depois rode o frontend em outro terminal.
+
+Em emulador Android, talvez seja necessário trocar `localhost` por `10.0.2.2` em `apiConfig.ts`, porque o emulador trata `localhost` como o próprio dispositivo virtual.
 
 ## Como rodar
 
@@ -196,27 +234,16 @@ npm run lint
 
 Executa o lint configurado no projeto.
 
-## Dados mockados
+## Fontes de dados
 
-O projeto não depende de backend real.
+O frontend consome a API local do backend.
 
-Estão mockados:
+- Usuarios, sessoes, veiculos, lista de compras e historico ficam no SQLite do backend.
+- Produtos, precos e estabelecimentos usados na recomendacao vem da SEFAZ.
+- A origem da rota vem do GPS real do celular.
+- A rota por ruas vem do OpenRouteService quando configurado, com OSRM publico como alternativa gratuita.
+- Acidentes, bloqueios, congestionamentos, obras e chuva ainda precisam de uma API gratuita real; enquanto isso nao estiver integrado, esses fatores nao entram no calculo.
 
-- autenticação;
-- usuário inicial;
-- veículo inicial;
-- lista inicial de produtos;
-- supermercados e atacadistas;
-- preços dos produtos;
-- coordenadas dos mercados;
-- posição atual do usuário;
-- distância calculada para simular rota.
-
-Os principais mocks ficam em:
-
-```txt
-src/shared/constants/mockData.ts
-```
 
 ## Estrutura do projeto
 
@@ -244,7 +271,7 @@ O projeto segue uma organização por features com separação inspirada em Clea
 ```txt
 domain/          contratos e interfaces
 application/     services e regras de negócio
-infrastructure/  mocks, AsyncStorage e implementações concretas
+infrastructure/  implementações concretas de API e persistencia
 presentation/    telas, hooks e schemas
 store/           estado global com Zustand
 ```
@@ -252,7 +279,7 @@ store/           estado global com Zustand
 Fluxo geral:
 
 ```txt
-Screen -> Store/Hook -> Service -> Repository -> Mock/AsyncStorage
+Screen -> Store/Hook -> Service -> Repository -> API/AsyncStorage
 ```
 
 ## Regra de negócio principal
@@ -274,11 +301,7 @@ A regra fica centralizada em:
 src/features/recommendations/application/RecommendationService.ts
 ```
 
-O cálculo de distância mockada fica em:
-
-```txt
-src/features/map/application/DistanceService.ts
-```
+O cálculo final de recomendacao fica no backend, em `Backend/src/services/recommendationService.ts`.
 
 ## Validação
 
@@ -304,7 +327,7 @@ npm start
 
 - `docs/ARCHITECTURE.md`: decisões de arquitetura.
 - `docs/BUSINESS_RULES.md`: regras de negócio.
-- `docs/MOCK_DATA.md`: explicação dos mocks.
+- `docs/MOCK_DATA.md`: fontes reais de dados e integracoes pendentes.
 - `docs/FUTURE_INTEGRATIONS.md`: plano para integrações reais.
 - `docs/APRESENTACAO_SALA.md`: material de apresentação em sala de aula.
 
@@ -368,4 +391,4 @@ Possíveis evoluções:
 
 ## Status do projeto
 
-O projeto está funcional com dados mockados e pronto para demonstração, estudo e evolução.
+O projeto está funcional com backend local, SEFAZ e rota por ruas, pronto para demonstração, estudo e evolução.

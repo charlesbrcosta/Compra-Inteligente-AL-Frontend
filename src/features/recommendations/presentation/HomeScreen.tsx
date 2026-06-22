@@ -1,73 +1,98 @@
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
-import { ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, Text, View } from 'react-native';
 
+import { useAppNavigation } from '@/app/routes/appNavigation';
+import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
 import { Header } from '@/shared/components/Header';
 import { MarketCard } from '@/shared/components/MarketCard';
-import { mockCurrentLocation } from '@/shared/constants/mockData';
+import { ScreenContainer } from '@/shared/components/ScreenContainer';
 import { formatCurrency, formatFuelConsumption } from '@/shared/utils/formatters';
-import { useMarkets } from '@/features/markets/presentation/useMarkets';
 import { useProductStore } from '@/features/products/store/productStore';
 import { useUserStore } from '@/features/user/store/userStore';
 import { useVehicleStore } from '@/features/vehicle/store/vehicleStore';
 import { useRecommendations } from '@/features/recommendations/presentation/useRecommendations';
 
 export function HomeScreen() {
-  const { markets } = useMarkets();
   const { products, loadProducts } = useProductStore();
   const { user, loadUser } = useUserStore();
   const { vehicle, loadVehicle } = useVehicleStore();
-  const recommendations = useRecommendations(products, markets, vehicle, mockCurrentLocation);
+  const { recommendations, loadRecommendations } = useRecommendations();
+  const { navigate } = useAppNavigation();
   const best = recommendations[0];
+
+  const reloadScreen = useCallback(async () => {
+    await Promise.all([loadUser(), loadVehicle(), loadProducts(), loadRecommendations()]);
+  }, [loadProducts, loadRecommendations, loadUser, loadVehicle]);
 
   useFocusEffect(
     useCallback(() => {
-      loadUser();
-      loadVehicle();
-      loadProducts();
-    }, [loadProducts, loadUser, loadVehicle]),
+      reloadScreen();
+    }, [reloadScreen]),
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50">
-      <ScrollView contentContainerClassName="p-5 pb-8">
-        <Header title={`Ola, ${user?.name?.split(' ')[0] ?? 'comprador'}`} subtitle="Resumo do seu planejamento de compra em Alagoas." />
+    <ScreenContainer onRefresh={reloadScreen}>
+      <Header title={`Ola, ${user?.name?.split(' ')[0] ?? 'comprador'}`} subtitle="Resumo do seu planejamento de compra em Alagoas." />
 
-        <View className="gap-3">
-          <Card>
-            <Text className="text-sm text-muted">Melhor opcao agora</Text>
-            <Text className="mt-1 text-xl font-bold text-ink">{best?.market.name ?? 'Adicione produtos'}</Text>
-            <Text className="mt-2 text-sm text-slate-700">
-              {best ? `Total estimado: ${formatCurrency(best.finalTotal)}` : 'Monte sua lista para receber uma recomendacao.'}
-            </Text>
-          </Card>
-
-          <View className="flex-row gap-3">
-            <Card className="flex-1">
-              <Text className="text-sm text-muted">Produtos</Text>
-              <Text className="mt-2 text-2xl font-bold text-ink">{products.length}</Text>
-            </Card>
-            <Card className="flex-1">
-              <Text className="text-sm text-muted">Veiculo</Text>
-              <Text className="mt-2 text-base font-bold text-ink">{vehicle ? formatFuelConsumption(vehicle.averageConsumptionKmPerLiter) : 'Pendente'}</Text>
-            </Card>
-          </View>
-
-          <Card>
-            <Text className="text-sm text-muted">Combustivel</Text>
-            <Text className="mt-2 text-lg font-bold text-ink">
-              {vehicle ? `${vehicle.fuelType} - ${formatCurrency(vehicle.fuelPricePerLiter)}/l` : 'Cadastre seu veiculo'}
-            </Text>
-          </Card>
-
-          <Header title="Mercados monitorados" />
-          {recommendations.slice(0, 3).map((recommendation) => (
-            <MarketCard key={recommendation.market.id} market={recommendation.market} />
-          ))}
+      <View className="gap-4">
+        <View className="overflow-hidden rounded-3xl bg-primary p-6">
+          <Text className="self-start rounded-full bg-yellow-200 px-3 py-1 text-xs font-extrabold uppercase text-ink">
+            Recomendacao de hoje
+          </Text>
+          <Text className="mt-4 text-2xl font-extrabold leading-8 text-white">
+            {best ? `${best.market.name} sai por ${formatCurrency(best.finalTotal)}` : 'Monte sua lista para comparar'}
+          </Text>
+          <Text className="mt-2 max-w-xl text-sm leading-5 text-white/85">
+            {best
+              ? `Economia estimada considerando produtos, combustivel e ida e volta.`
+              : 'Adicione produtos e cadastre seu veiculo para descobrir o menor custo total.'}
+          </Text>
+          <Pressable className="mt-5 self-start rounded-xl bg-white px-4 py-2 active:opacity-80" onPress={() => navigate('Recommendations')}>
+            <Text className="text-sm font-extrabold text-primary">Ver comparacao completa</Text>
+          </Pressable>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+
+        <View className="flex-row rounded-2xl border border-line bg-white p-4">
+          <Stat label="Veiculo" value={vehicle ? formatFuelConsumption(vehicle.averageConsumptionKmPerLiter) : 'Pendente'} />
+          <Divider />
+          <Stat label="Combustivel" value={vehicle ? `${formatCurrency(vehicle.fuelPricePerLiter)}/l` : 'Pendente'} />
+          <Divider />
+          <Stat label="Itens" value={`${products.length}`} />
+        </View>
+
+        <View>
+          <Text className="mb-3 text-xl font-extrabold text-ink">Mercados monitorados</Text>
+          {recommendations.length === 0 ? (
+            <Card>
+              <Text className="text-base leading-6 text-muted">
+                Quando houver produtos, GPS e retorno da SEFAZ, os estabelecimentos reais aparecem aqui.
+              </Text>
+            </Card>
+          ) : null}
+          <View className="gap-3">
+            {recommendations.slice(0, 3).map((recommendation) => (
+              <MarketCard key={recommendation.market.id} market={recommendation.market} />
+            ))}
+          </View>
+        </View>
+
+        <Button title="Ver historico" variant="accent" onPress={() => navigate('History')} />
+      </View>
+    </ScreenContainer>
   );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <View className="min-w-0 flex-1 items-center px-2">
+      <Text className="text-center text-[10px] font-bold uppercase tracking-wide text-muted">{label}</Text>
+      <Text className="mt-1 text-center text-sm font-extrabold text-ink">{value}</Text>
+    </View>
+  );
+}
+
+function Divider() {
+  return <View className="h-9 w-px bg-line" />;
 }

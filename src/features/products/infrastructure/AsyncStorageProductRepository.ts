@@ -15,6 +15,23 @@ export class AsyncStorageProductRepository implements ProductRepository {
     return products;
   }
 
+  async create(product: ShoppingProduct): Promise<ShoppingProduct> {
+    const products = await this.list();
+    await this.save([...products, product]);
+    return product;
+  }
+
+  async update(product: ShoppingProduct): Promise<ShoppingProduct> {
+    const products = await this.list();
+    await this.save(products.map((currentProduct) => (currentProduct.id === product.id ? product : currentProduct)));
+    return product;
+  }
+
+  async remove(id: string): Promise<void> {
+    const products = await this.list();
+    await this.save(products.filter((product) => product.id !== id));
+  }
+
   async clear(): Promise<void> {
     await AsyncStorage.removeItem(STORAGE_KEYS.products);
   }

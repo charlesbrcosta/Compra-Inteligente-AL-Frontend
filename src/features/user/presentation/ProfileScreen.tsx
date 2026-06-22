@@ -1,25 +1,31 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, View } from 'react-native';
 
 import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
 import { Header } from '@/shared/components/Header';
 import { Input } from '@/shared/components/Input';
+import { ScreenContainer } from '@/shared/components/ScreenContainer';
+import { ApiSefazRepository } from '@/features/sefaz/infrastructure/ApiSefazRepository';
 import { createId } from '@/shared/utils/id';
+import { formatCurrency } from '@/shared/utils/formatters';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { UserFormData, userSchema } from '@/features/user/presentation/userSchemas';
 import { useUserStore } from '@/features/user/store/userStore';
 import { VehicleFormData, vehicleSchema } from '@/features/vehicle/presentation/vehicleSchemas';
 import { useVehicleStore } from '@/features/vehicle/store/vehicleStore';
 
+const sefazRepository = new ApiSefazRepository();
+
 export function ProfileScreen() {
   const logout = useAuthStore((state) => state.logout);
   const { user, loadUser, saveUser } = useUserStore();
   const { vehicle, loadVehicle, saveVehicle } = useVehicleStore();
+  const [fuelLookupMessage, setFuelLookupMessage] = useState<string | null>(null);
+  const [isFuelLookupLoading, setIsFuelLookupLoading] = useState(false);
 
   const userForm = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
@@ -35,11 +41,14 @@ export function ProfileScreen() {
     },
   });
 
+  const reloadScreen = useCallback(async () => {
+    await Promise.all([loadUser(), loadVehicle()]);
+  }, [loadUser, loadVehicle]);
+
   useFocusEffect(
     useCallback(() => {
-      loadUser();
-      loadVehicle();
-    }, [loadUser, loadVehicle]),
+      reloadScreen();
+    }, [reloadScreen]),
   );
 
   useEffect(() => {
@@ -84,33 +93,85 @@ export function ProfileScreen() {
     });
   });
 
+  const updateFuelPriceFromSefaz = async () => {
+    try {
+      setFuelLookupMessage(null);
+      setIsFuelLookupLoading(true);
+      const summary = await sefazRepository.getCurrentFuelPrice();
+      vehicleForm.setValue('fuelPricePerLiter', summary.averagePrice, { shouldDirty: true, shouldValidate: true });
+      setFuelLookupMessage(
+        `Preco medio SEFAZ: ${formatCurrency(summary.averagePrice)} com ${summary.samples} registros recentes.`,
+      );
+    } catch {
+      setFuelLookupMessage('Nao foi possivel consultar o combustivel na SEFAZ agora.');
+    } finally {
+      setIsFuelLookupLoading(false);
+    }
+  };
+
   return (
-    <SafeAreaView className="flex-1 bg-slate-50">
-      <ScrollView contentContainerClassName="p-5 pb-8">
-        <Header title="Perfil e veiculo" subtitle="Essas informacoes alimentam a simulacao de economia." />
+    <ScreenContainer onRefresh={reloadScreen}>
+      <Header title="Perfil e veiculo" subtitle="Essas informacoes alimentam a simulacao de economia." />
 
-        <View className="gap-5">
-          <Card className="gap-4">
-            <Text className="text-lg font-bold text-ink">Dados do usuario</Text>
-            <Controller control={userForm.control} name="name" render={({ field, fieldState }) => <Input label="Nome" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
-            <Controller control={userForm.control} name="email" render={({ field, fieldState }) => <Input autoCapitalize="none" keyboardType="email-address" label="E-mail" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
-            <Controller control={userForm.control} name="city" render={({ field, fieldState }) => <Input label="Cidade" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
-            <Controller control={userForm.control} name="neighborhood" render={({ field, fieldState }) => <Input label="Bairro" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
-            <Button title="Salvar usuario" onPress={submitUser} isLoading={userForm.formState.isSubmitting} />
-          </Card>
-
-          <Card className="gap-4">
-            <Text className="text-lg font-bold text-ink">Veiculo</Text>
-            <Controller control={vehicleForm.control} name="model" render={({ field, fieldState }) => <Input label="Modelo" placeholder="Ex: Fiat Argo 1.0" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
-            <Controller control={vehicleForm.control} name="fuelType" render={({ field, fieldState }) => <Input autoCapitalize="none" label="Tipo de combustivel" placeholder="gasolina, etanol, diesel ou gnv" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
-            <Controller control={vehicleForm.control} name="averageConsumptionKmPerLiter" render={({ field, fieldState }) => <Input keyboardType="numeric" label="Consumo medio (km/l)" onBlur={field.onBlur} onChangeText={field.onChange} value={String(field.value)} error={fieldState.error?.message} />} />
-            <Controller control={vehicleForm.control} name="fuelPricePerLiter" render={({ field, fieldState }) => <Input keyboardType="numeric" label="Preco do combustivel por litro" onBlur={field.onBlur} onChangeText={field.onChange} value={String(field.value)} error={fieldState.error?.message} />} />
-            <Button title="Salvar veiculo" onPress={submitVehicle} isLoading={vehicleForm.formState.isSubmitting} />
-          </Card>
-
-          <Button title="Sair" variant="danger" onPress={logout} />
+      <View className="gap-5">
+        <View className="items-center rounded-3xl border border-line bg-white p-6">
+          <View className="h-16 w-16 items-center justify-center rounded-full bg-primary">
+            <Text className="text-2xl font-extrabold text-white">
+              {(user?.name ?? 'U').slice(0, 2).toUpperCase()}
+            </Text>
+          </View>
+          <Text className="mt-3 text-xl font-extrabold text-ink">{user?.name ?? 'Usuario'}</Text>
+          <Text className="mt-1 text-sm text-muted">{user?.email ?? 'Cadastre seus dados'}</Text>
+          {user ? (
+            <Text className="mt-3 rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-900">
+              {user.neighborhood}, {user.city}
+            </Text>
+          ) : null}
         </View>
-      </ScrollView>
-    </SafeAreaView>
+
+        <Card className="gap-4">
+          <Text className="text-xs font-extrabold uppercase tracking-wide text-muted">Dados do usuario</Text>
+          <Controller control={userForm.control} name="name" render={({ field, fieldState }) => <Input label="Nome" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
+          <Controller control={userForm.control} name="email" render={({ field, fieldState }) => <Input autoCapitalize="none" keyboardType="email-address" label="E-mail" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
+          <View className="gap-3 sm:flex-row">
+            <View className="flex-1">
+              <Controller control={userForm.control} name="city" render={({ field, fieldState }) => <Input label="Cidade" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
+            </View>
+            <View className="flex-1">
+              <Controller control={userForm.control} name="neighborhood" render={({ field, fieldState }) => <Input label="Bairro" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
+            </View>
+          </View>
+          <Button title="Salvar usuario" variant="success" onPress={submitUser} isLoading={userForm.formState.isSubmitting} />
+        </Card>
+
+        <Card className="gap-4">
+          <Text className="text-xs font-extrabold uppercase tracking-wide text-muted">Veiculo</Text>
+          <Controller control={vehicleForm.control} name="model" render={({ field, fieldState }) => <Input label="Modelo" placeholder="Ex: Fiat Argo 1.0" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
+          <Controller control={vehicleForm.control} name="fuelType" render={({ field, fieldState }) => <Input autoCapitalize="none" label="Tipo de combustivel" placeholder="gasolina, etanol, diesel ou gnv" onBlur={field.onBlur} onChangeText={field.onChange} value={field.value} error={fieldState.error?.message} />} />
+          <View className="gap-3 sm:flex-row">
+            <View className="flex-1">
+            <Controller control={vehicleForm.control} name="averageConsumptionKmPerLiter" render={({ field, fieldState }) => <Input keyboardType="numeric" label="Consumo medio (km/l)" onBlur={field.onBlur} onChangeText={field.onChange} value={String(field.value)} error={fieldState.error?.message} />} />
+            </View>
+            <View className="flex-1">
+            <Controller control={vehicleForm.control} name="fuelPricePerLiter" render={({ field, fieldState }) => <Input keyboardType="numeric" label="Preco do combustivel por litro" onBlur={field.onBlur} onChangeText={field.onChange} value={String(field.value)} error={fieldState.error?.message} />} />
+            </View>
+          </View>
+          {fuelLookupMessage ? (
+            <View className="rounded-2xl border border-line bg-sand p-3">
+              <Text className="text-sm font-semibold text-muted">{fuelLookupMessage}</Text>
+            </View>
+          ) : null}
+          <Button
+            title="Buscar combustivel na SEFAZ"
+            variant="secondary"
+            isLoading={isFuelLookupLoading}
+            onPress={updateFuelPriceFromSefaz}
+          />
+          <Button title="Salvar veiculo" variant="success" onPress={submitVehicle} isLoading={vehicleForm.formState.isSubmitting} />
+        </Card>
+
+        <Button title="Sair" variant="danger" onPress={logout} />
+      </View>
+    </ScreenContainer>
   );
 }

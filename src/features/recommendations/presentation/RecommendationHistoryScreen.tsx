@@ -1,0 +1,61 @@
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+import { Text, View } from 'react-native';
+
+import { useRecommendations } from '@/features/recommendations/presentation/useRecommendations';
+import { EmptyState } from '@/shared/components/EmptyState';
+import { Header } from '@/shared/components/Header';
+import { Loading } from '@/shared/components/Loading';
+import { ScreenContainer } from '@/shared/components/ScreenContainer';
+import { formatCurrency } from '@/shared/utils/formatters';
+
+export function RecommendationHistoryScreen() {
+  const { history, isHistoryLoading, loadHistory } = useRecommendations();
+
+  const reloadScreen = useCallback(async () => {
+    await loadHistory();
+  }, [loadHistory]);
+
+  useFocusEffect(
+    useCallback(() => {
+      reloadScreen();
+    }, [reloadScreen]),
+  );
+
+  if (isHistoryLoading) {
+    return <Loading label="Carregando historico" />;
+  }
+
+  return (
+    <ScreenContainer onRefresh={reloadScreen}>
+        <Header title="Historico" subtitle="Ultimas recomendacoes calculadas para comparar decisoes anteriores." />
+
+        <View className="gap-3">
+          {history.length === 0 ? (
+            <EmptyState title="Sem historico" description="Gere uma recomendacao para salvar o primeiro registro." />
+          ) : (
+            history.map((entry) => {
+              const best = entry.recommendations.find((recommendation) => recommendation.isBest);
+
+              return (
+                <View key={entry.id} className="rounded-2xl border border-line bg-white p-5">
+                  <Text className="text-xs font-extrabold uppercase tracking-wide text-muted">
+                    {new Date(entry.createdAt).toLocaleString('pt-BR')}
+                  </Text>
+                  <Text className="mt-2 text-lg font-extrabold text-ink">
+                    {best?.market.name ?? 'Mercado nao identificado'}
+                  </Text>
+                  <Text className="mt-2 text-sm font-semibold text-success">
+                    Total recomendado: {formatCurrency(best?.finalTotal ?? 0)}
+                  </Text>
+                  <Text className="mt-2 text-xs text-slate-600">
+                    {entry.recommendations.length} mercados comparados nesta simulacao.
+                  </Text>
+                </View>
+              );
+            })
+          )}
+        </View>
+    </ScreenContainer>
+  );
+}
