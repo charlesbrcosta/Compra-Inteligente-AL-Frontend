@@ -616,14 +616,14 @@ function BarcodeScannerModal({
         ) : null}
 
         {barcode || isLoading || error || products.length > 0 ? (
-          <View className="absolute bottom-0 left-0 right-0 z-20 rounded-t-3xl bg-white p-6" style={styles.scanPanel}>
+          <View className="absolute bottom-0 left-0 right-0 z-20 max-h-[86%] rounded-t-3xl bg-white p-5" style={styles.scanPanel}>
             {barcode ? <Text className="text-center text-xs font-bold uppercase tracking-wide text-muted">Codigo lido: {barcode}</Text> : null}
             {isLoading ? <Text className="mt-2 text-center text-base font-extrabold text-ink">Consultando SEFAZ...</Text> : null}
             {error ? <Text className="mt-2 text-center text-sm font-bold text-red-700">{error}</Text> : null}
             {products.length > 0 ? (
               <>
                 <Text className="mt-2 text-center text-base font-extrabold text-ink">Escolha o produto para cadastrar</Text>
-                <ScrollView className="mt-3 max-h-72" contentContainerClassName="gap-3 pb-2">
+                <ScrollView className="mt-3" contentContainerClassName="gap-3 pb-2">
                   {products.slice(0, 12).map((product) => {
                     const isAddingProduct =
                       isSaving || pendingProductKeys.includes(barcode ? `barcode-${barcode}` : getSefazProductKey(product));
