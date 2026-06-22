@@ -9,7 +9,6 @@ import { Button } from '@/shared/components/Button';
 import { Card } from '@/shared/components/Card';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { Header } from '@/shared/components/Header';
-import { TrashSymbol } from '@/shared/components/IconSymbols';
 import { Input } from '@/shared/components/Input';
 import { Loading } from '@/shared/components/Loading';
 import { ProductCard } from '@/shared/components/ProductCard';
@@ -201,10 +200,6 @@ export function ProductsScreen() {
     } finally {
       setPendingSefazProductKeys((current) => current.filter((key) => key !== productKey));
     }
-  };
-
-  const dismissSefazProduct = (sefazProduct: SefazProductPrice) => {
-    setDismissedSefazProducts((current) => [...current, getSefazProductKey(sefazProduct)]);
   };
 
   const openScanner = async () => {
@@ -402,7 +397,6 @@ export function ProductsScreen() {
           products={sefazProducts}
           visible={isSefazModalVisible}
           onAdd={addSefazProductToList}
-          onDismissProduct={dismissSefazProduct}
           onClose={() => setIsSefazModalVisible(false)}
         />
         <BarcodeScannerModal
@@ -439,7 +433,6 @@ function SefazResultsModal({
   visible,
   onAdd,
   onClose,
-  onDismissProduct,
 }: {
   dismissedProductKeys: string[];
   isSaving: boolean;
@@ -448,7 +441,6 @@ function SefazResultsModal({
   visible: boolean;
   onAdd: (product: SefazProductPrice) => void;
   onClose: () => void;
-  onDismissProduct: (product: SefazProductPrice) => void;
 }) {
   const visibleProducts = products
     .filter((product) => !dismissedProductKeys.includes(getSefazProductKey(product)))
@@ -461,7 +453,7 @@ function SefazResultsModal({
           <View className="mb-4 flex-row items-start justify-between gap-4">
             <View className="min-w-0 flex-1">
               <Text className="text-2xl font-extrabold text-ink">Produtos encontrados</Text>
-              <Text className="mt-1 text-base leading-6 text-muted">Toque em V para adicionar. O item fica na sua lista sem vinculo com supermercado.</Text>
+              <Text className="mt-1 text-base leading-6 text-muted">Toque em + para adicionar. O item fica na sua lista sem vinculo com supermercado.</Text>
             </View>
             <Pressable className="h-11 w-11 items-center justify-center rounded-xl bg-primary active:opacity-80" onPress={onClose}>
               <Text className="text-lg font-extrabold text-white">X</Text>
@@ -480,7 +472,6 @@ function SefazResultsModal({
                   isSaving={isSaving || pendingProductKeys.includes(getSefazProductKey(product))}
                   product={product}
                   onAdd={() => onAdd(product)}
-                  onDismiss={() => onDismissProduct(product)}
                 />
               ))
             )}
@@ -685,12 +676,10 @@ function SefazProductResultCard({
   isSaving,
   product,
   onAdd,
-  onDismiss,
 }: {
   isSaving: boolean;
   product: SefazProductPrice;
   onAdd: () => void;
-  onDismiss: () => void;
 }) {
   return (
     <View className="rounded-2xl border border-line bg-white p-4">
@@ -701,18 +690,13 @@ function SefazProductResultCard({
           <Text className="mt-1 text-xs text-muted">Ao adicionar, ele nao fica vinculado a nenhum supermercado.</Text>
           <Text className="mt-2 text-2xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
         </View>
-        <View className="gap-2">
-          <Pressable
-            className="h-11 w-11 items-center justify-center rounded-xl bg-green-50 active:opacity-80"
-            disabled={isSaving}
-            onPress={onAdd}
-          >
-            <Text className="text-lg font-extrabold text-success">V</Text>
-          </Pressable>
-          <Pressable className="h-11 w-11 items-center justify-center rounded-xl bg-red-50 active:opacity-80" onPress={onDismiss}>
-            <TrashSymbol />
-          </Pressable>
-        </View>
+        <Pressable
+          className="h-11 w-11 items-center justify-center rounded-xl bg-green-50 active:opacity-80"
+          disabled={isSaving}
+          onPress={onAdd}
+        >
+          <Text className="text-2xl font-extrabold text-success">+</Text>
+        </Pressable>
       </View>
     </View>
   );
