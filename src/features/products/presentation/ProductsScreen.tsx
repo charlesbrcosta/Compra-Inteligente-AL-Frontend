@@ -651,7 +651,9 @@ function BarcodeScannerModal({
               </>
             ) : null}
             <View className="mt-2">
-              <Button title="Escanear de novo" variant="ghost" onPress={onScanAgain} />
+              <Pressable className="min-h-14 items-center justify-center rounded-xl bg-secondary px-5 active:opacity-80" onPress={onScanAgain}>
+                <Text className="text-base font-extrabold text-white">Escanear de novo</Text>
+              </Pressable>
             </View>
           </View>
         ) : null}
