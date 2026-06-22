@@ -691,11 +691,13 @@ function SefazProductResultCard({
           <Text className="mt-2 text-2xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
         </View>
         <Pressable
-          className="h-11 w-11 items-center justify-center rounded-xl bg-green-50 active:opacity-80"
+          className={`h-12 w-12 items-center justify-center rounded-2xl bg-success shadow-sm ${
+            isSaving ? 'opacity-70' : 'active:opacity-80'
+          }`}
           disabled={isSaving}
           onPress={onAdd}
         >
-          <Text className="text-2xl font-extrabold text-success">+</Text>
+          <Text className="text-3xl font-extrabold leading-8 text-white">+</Text>
         </Pressable>
       </View>
     </View>
