@@ -634,6 +634,9 @@ function BarcodeScannerModal({
                           {normalizeSefazProductName(product)}
                         </Text>
                         <Text className="mt-1 text-xs font-semibold text-muted">Produto confirmado pela SEFAZ</Text>
+                        <Text className="mt-1 text-xs font-bold text-ink" numberOfLines={1}>
+                          {formatSefazMarketLabel(product)}
+                        </Text>
                         <View className="mt-3 flex-row items-center justify-between gap-3">
                           <Text className="text-xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
                           <Pressable
@@ -698,6 +701,9 @@ function SefazProductResultCard({
             {normalizeSefazProductName(product)}
           </Text>
           <Text className="mt-1 text-sm text-muted">Produto confirmado pela SEFAZ</Text>
+          <Text className="mt-1 text-xs font-bold text-ink" numberOfLines={1}>
+            {formatSefazMarketLabel(product)}
+          </Text>
           <Text className="mt-2 text-2xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
         </View>
         <Pressable
@@ -716,6 +722,13 @@ function SefazProductResultCard({
 
 function normalizeSefazProductName(product: SefazProductPrice) {
   return (product.sefazDescription || product.productName).trim();
+}
+
+function formatSefazMarketLabel(product: SefazProductPrice) {
+  const marketName = product.marketName || product.corporateName;
+  const location = [product.neighborhood, product.city].filter(Boolean).join(', ');
+
+  return location ? `${marketName} - ${location}` : marketName;
 }
 
 function compactSefazProductName(name: string) {
