@@ -687,7 +687,6 @@ function SefazProductResultCard({
         <View className="min-w-0 flex-1">
           <Text className="text-base font-extrabold text-ink">{normalizeSefazProductName(product)}</Text>
           <Text className="mt-1 text-sm text-muted">Produto confirmado pela SEFAZ</Text>
-          <Text className="mt-1 text-xs text-muted">Ao adicionar, ele nao fica vinculado a nenhum supermercado.</Text>
           <Text className="mt-2 text-2xl font-extrabold text-success">{formatCurrency(product.price)}</Text>
         </View>
         <Pressable
